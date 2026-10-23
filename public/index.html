@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Jua&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_6" />
+  <link rel="stylesheet" href="./style.css?v=20261023_7" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -39,28 +39,27 @@
        VIEW 1: 교실 메인 게임 스테이지 (선생님 & 프로젝터 공유 화면)
        ========================================================= -->
   <main class="view-section active" id="view-stage">
-    <!-- 상단 선생님 컨트롤 바 (과도한 박스 배제, 미니멀 툴바) -->
+    <!-- 상단 선생님 컨트롤 바 (파스텔톤, 미니멀) -->
     <section class="teacher-control-bar">
       <div class="control-left">
         <div class="control-group">
-          <label for="stageSetSelect">수업 세트</label>
+          <label for="stageSetSelect">오늘의 주제</label>
           <select id="stageSetSelect" class="select-clean"></select>
         </div>
 
         <div class="control-group">
-          <label for="timeOverrideSelect">제한 시간</label>
+          <label for="timeOverrideSelect">제한시간</label>
           <select id="timeOverrideSelect" class="select-clean">
+            <option value="3">3초</option>
+            <option value="5">5초</option>
             <option value="10" selected>10초</option>
             <option value="15">15초</option>
-            <option value="5">5초</option>
-            <option value="">문제별 기본</option>
           </select>
         </div>
 
-        <div class="stats-clean">
-          <span class="stat-item">접속 <strong id="totalPlayerCount">0</strong>명</span>
-          <span class="stat-sep">·</span>
-          <span class="stat-item stat-alive">생존 <strong id="alivePlayerCount">0</strong>명</span>
+        <div class="stats-pastel">
+          <span class="stat-badge stat-total">접속 <strong id="totalPlayerCount">0</strong>명</span>
+          <span class="stat-badge stat-alive">생존 <strong id="alivePlayerCount">0</strong>명</span>
         </div>
       </div>
 
@@ -380,6 +379,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./app.js?v=20261023_6"></script>
+  <script src="./app.js?v=20261023_7"></script>
 </body>
 </html>

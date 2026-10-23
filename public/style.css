@@ -168,22 +168,23 @@ body.student-only-mode .nav-menu {
 }
 
 .btn-subtle {
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 .btn-subtle:hover {
-  background: #f1f5f9;
+  background: #dcfce7;
 }
 
 .btn-ghost {
-  background: transparent;
+  background: #f8fafc;
   color: #64748b;
+  border: 1px solid #e2e8f0;
 }
 
 .btn-ghost:hover {
-  background: #f8fafc;
+  background: #f1f5f9;
   color: #1e293b;
 }
 
@@ -304,27 +305,47 @@ body.student-only-mode .nav-menu {
   border-color: #6366f1;
 }
 
-/* 박스 형태의 뱃지 대신 깔끔한 인라인 텍스트 통계 */
-.stats-clean {
+/* 접속 인원 & 생존 인원 (예쁜 파스텔톤 뱃지, 이모지 없음) */
+.stats-pastel {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
-  color: #64748b;
   margin-left: 6px;
 }
 
-.stat-item strong {
-  color: #0f172a;
-  font-weight: 700;
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1px;
 }
 
-.stat-sep {
-  color: #cbd5e1;
+.stat-total {
+  background: #eef2ff; /* 소프트 파스텔 라벤더 블루 */
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+.stat-total strong {
+  color: #312e81;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.stat-alive {
+  background: #ecfdf5; /* 은은하고 산뜻한 파스텔 민트 */
+  color: #047857;
+  border: 1px solid #a7f3d0;
 }
 
 .stat-alive strong {
-  color: #059669;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 0.92rem;
 }
 
 /* =========================================

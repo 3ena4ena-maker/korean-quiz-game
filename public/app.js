@@ -1036,7 +1036,7 @@ function bindStageEvents() {
 
   document.getElementById('addBotsBtn').addEventListener('click', () => {
     hostAddBots(5);
-    showToast('🤖 가상 외국인 학생 5명이 출발선에 합류했습니다!');
+    showToast('가상 학생 5명이 대기 광장에 입장했습니다.');
   });
 
   document.getElementById('clearBotsBtn').addEventListener('click', () => {
@@ -1063,7 +1063,7 @@ function bindStageEvents() {
     });
     gameState.lastEliminatedIds = [];
     broadcastHostState({ resetChoices: true, reviveAll: true });
-    showToast('⚡ 탈락했던 모든 아바타가 무대 위로 부활했습니다!');
+    showToast('탈락했던 모든 학생이 다시 부활했습니다.');
   });
 
   document.getElementById('resetLobbyBtn').addEventListener('click', () => {
@@ -1083,7 +1083,7 @@ function bindStageEvents() {
   document.getElementById('startGameBtn').addEventListener('click', () => {
     if (Object.keys(hostPlayersMap).length === 0) {
       hostAddBots(5);
-      showToast('🤖 테스트를 위해 가상 학생 5명이 함께 입장했습니다!');
+      showToast('가상 학생 5명이 함께 입장했습니다.');
     }
     hostStartQuestionRound(0);
   });
@@ -1265,21 +1265,21 @@ function renderStageUI() {
 
   const banner = document.getElementById('stageStatusBanner');
   if (gameState.phase === 'LOBBY') {
-    banner.textContent = `🐾 대기실: 현재 ${totalCount}명의 아바타가 준비 중입니다!`;
+    banner.textContent = `대기실: 현재 ${totalCount}명의 학생이 준비 중입니다.`;
   } else if (gameState.phase === 'QUESTION') {
-    banner.textContent = `🏃‍♂️ 빈칸에 들어갈 정답(A 또는 B)으로 걸어가서 앞에 서세요! (${Number(gameState.timeRemaining).toFixed(1)}초)`;
+    banner.textContent = `정답(A 또는 B) 구역으로 이동하세요! (${Number(gameState.timeRemaining).toFixed(1)}초)`;
   } else if (gameState.phase === 'REVEAL') {
-    banner.textContent = `🥁 정답 공개! 정답은 [${q ? q.answer : ''}] 입니다!`;
+    banner.textContent = `정답 공개: [${q ? q.answer : ''}] 구역이 정답입니다!`;
   } else if (gameState.phase === 'DROP') {
-    banner.textContent = `🕳️ 오답 구역 바닥이 열립니다! 오답 아바타들이 아래로 떨어집니다!`;
+    banner.textContent = `오답 구역 바닥이 열립니다!`;
   } else if (gameState.phase === 'WINNER') {
-    banner.textContent = `👑 게임 종료! 최후까지 살아남은 우승 아바타를 축하해주세요!`;
+    banner.textContent = `최후까지 살아남은 우승자를 축하해주세요!`;
   }
 
   document.getElementById('eliminatedCount').textContent = eliminatedPlayers.length;
   const elimList = document.getElementById('eliminatedList');
   if (eliminatedPlayers.length === 0) {
-    elimList.innerHTML = `<span class="elim-empty">아직 떨어진 아바타가 없어요!</span>`;
+    elimList.innerHTML = `<span class="elim-empty">탈락한 학생이 없습니다.</span>`;
   } else {
     elimList.innerHTML = eliminatedPlayers.map(p => {
       const av = AVATAR_CATALOG[p.avatar] || AVATAR_CATALOG.bear;
@@ -1583,22 +1583,22 @@ function renderStudentControllers() {
       if (!isAlive) {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:#fff1f2; color:#be123c;">
-            🕳️ 아쉽게도 오답 구역에서 떨어졌어요!<br/>
-            <small style="color:#64748b;">다음 문제가 시작되면 자동으로 무대에 부활합니다!</small>
+            오답 구역에서 탈락했습니다.<br/>
+            <small style="color:#64748b;">다음 문제가 시작되면 자동으로 무대에 부활합니다.</small>
           </div>
         `;
       } else if (gameState.phase === 'LOBBY') {
         centerContentHtml = `
-          <div class="st-question-prompt" style="background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0;">
-            🟢 <strong>교실 대기광장에 입장 완료!</strong><br/>
-            <small style="color:#065f46;">선생님 화면 중앙 출발선에 내 아바타가 서 있어요. 문제가 시작되면 A / B 버튼이 열립니다!</small>
+          <div class="st-question-prompt" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
+            <strong>교실 대기광장에 입장 완료</strong><br/>
+            <small style="color:#15803d;">문제가 시작되면 A 또는 B 선택 버튼이 활성화됩니다.</small>
           </div>
         `;
       } else if (gameState.phase === 'QUESTION' && q) {
         centerContentHtml = `
           <div class="st-question-prompt">
-            <div class="st-timer-display" style="font-size:0.86rem; color:#4f46e5; margin-bottom:4px; font-weight:800;">
-              ⏰ 남은 시간: <span class="st-timer-val">${Number(gameState.timeRemaining).toFixed(1)}</span>초
+            <div class="st-timer-display" style="font-size:0.86rem; color:#4f46e5; margin-bottom:4px; font-weight:700;">
+              남은 시간: <span class="st-timer-val">${Number(gameState.timeRemaining).toFixed(1)}</span>초
             </div>
             <div class="st-sentence-val">${escapeHtml(q.sentence)}</div>
           </div>
@@ -1612,22 +1612,22 @@ function renderStudentControllers() {
               <span class="st-choice-word">${escapeHtml(q.optionB)}</span>
             </button>
           </div>
-          <p class="st-choice-guide" style="text-align:center; font-size:0.82rem; color:#64748b; font-weight:700;">
-            ${activeChoice === 'CENTER' ? '👆 버튼을 누르면 아바타가 선택한 정답 앞으로 걸어갑니다!' : `🏃 현재 [${activeChoice}] 구역 앞에 서 있습니다!`}
+          <p class="st-choice-guide" style="text-align:center; font-size:0.82rem; color:#64748b; font-weight:600;">
+            ${activeChoice === 'CENTER' ? '버튼을 누르면 아바타가 선택한 구역으로 이동합니다.' : `현재 [${activeChoice}] 구역에 서 있습니다.`}
           </p>
         `;
       } else if ((gameState.phase === 'REVEAL' || gameState.phase === 'DROP') && q) {
         const wonRound = activeChoice === q.answer;
         centerContentHtml = `
           <div class="st-question-prompt" style="background:${wonRound ? '#ecfdf5' : '#fef2f2'}; color:${wonRound ? '#047857' : '#b91c1c'};">
-            ${wonRound ? '🎉 정답입니다! 살아남았어요!' : '😱 오답입니다! 바닥이 열립니다!'}
+            ${wonRound ? '정답입니다! 살아남았습니다.' : '오답 구역입니다!'}
             <div style="margin-top:6px; font-size:0.86rem; color:#334155;">정답: <strong>${q.answer}. ${escapeHtml(q.answer === 'A' ? q.optionA : q.optionB)}</strong></div>
           </div>
         `;
       } else if (gameState.phase === 'WINNER') {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:#fef3c7; color:#92400e;">
-            👑 최후의 서바이벌 우승자 발표 중!
+            최후의 서바이벌 우승자 발표 중
           </div>
         `;
       }
