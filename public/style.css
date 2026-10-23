@@ -47,8 +47,11 @@ body {
   overflow-x: hidden;
 }
 
-/* 학생 전용 모드일 때 상단바 간소화 */
-body.student-only-mode .nav-menu {
+/* 학생 전용 모드일 때 선생님 전용 메뉴만 숨기고 광장 무대와 학생 리모컨 탭은 자유롭게 이용 가능 */
+body.student-only-mode [data-tab="editor"],
+body.student-only-mode #openInviteModalBtn,
+body.student-only-mode #toggleSoundBtn,
+body.student-only-mode .teacher-control-bar {
   display: none !important;
 }
 

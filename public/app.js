@@ -149,6 +149,32 @@ const BOT_PROFILES = [
   { name: '사라', country: '🇪🇬', avatar: 'cloud_pearl' }
 ];
 
+function getAvatarInfo(key) {
+  return AVATAR_CATALOG[key] || AVATAR_CATALOG.coral_peach;
+}
+
+function renderCreatureThumb(key) {
+  const av = getAvatarInfo(key);
+  return `
+    <div class="creature-thumb" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
+      <div class="thumb-body">
+        <div class="thumb-shine"></div>
+        <div class="thumb-eye left"></div>
+        <div class="thumb-eye right"></div>
+        <div class="thumb-blush left"></div>
+        <div class="thumb-blush right"></div>
+        <div class="thumb-mouth"></div>
+        <div class="thumb-arm left"></div>
+        <div class="thumb-arm right"></div>
+      </div>
+      <div class="thumb-legs">
+        <div class="thumb-leg left"></div>
+        <div class="thumb-leg right"></div>
+      </div>
+    </div>
+  `;
+}
+
 const DEFAULT_QUIZ_DATABASE = {
   activeSetId: 'set-1',
   sets: [
@@ -720,7 +746,7 @@ function handleIncomingStudentAction(msg, fromCloudRelay = false) {
     hostPlayersMap[id] = {
       id,
       name: String(p.name || '학생').trim().slice(0, 14),
-      avatar: p.avatar || 'bear',
+      avatar: p.avatar || 'coral_peach',
       country: p.country || '🌏',
       choice: existing ? existing.choice : 'CENTER',
       alive: existing ? existing.alive : true,
@@ -739,7 +765,7 @@ function handleIncomingStudentAction(msg, fromCloudRelay = false) {
       player = {
         id: playerId,
         name: '학생',
-        avatar: 'bear',
+        avatar: 'coral_peach',
         country: '🌏',
         choice: 'CENTER',
         alive: true,
@@ -1455,31 +1481,6 @@ function renderStageUI() {
     banner.textContent = `최후까지 살아남은 우승자를 축하해주세요!`;
   }
 
-function getAvatarInfo(key) {
-  return AVATAR_CATALOG[key] || AVATAR_CATALOG.coral_peach;
-}
-
-function renderCreatureThumb(key) {
-  const av = getAvatarInfo(key);
-  return `
-    <div class="creature-thumb" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
-      <div class="thumb-body">
-        <div class="thumb-shine"></div>
-        <div class="thumb-eye left"></div>
-        <div class="thumb-eye right"></div>
-        <div class="thumb-blush left"></div>
-        <div class="thumb-blush right"></div>
-        <div class="thumb-mouth"></div>
-        <div class="thumb-arm left"></div>
-        <div class="thumb-arm right"></div>
-      </div>
-      <div class="thumb-legs">
-        <div class="thumb-leg left"></div>
-        <div class="thumb-leg right"></div>
-      </div>
-    </div>
-  `;
-}
 
   document.getElementById('eliminatedCount').textContent = eliminatedPlayers.length;
   const elimList = document.getElementById('eliminatedList');
@@ -1703,8 +1704,8 @@ function renderStudentControllers() {
     document.getElementById('studentMiniMount')
   ];
 
-  const meOnServer = gameState.players.find(p => p.id === myStudentProfile.playerId);
-  const av = AVATAR_CATALOG[myStudentProfile.avatar] || AVATAR_CATALOG.bear;
+  const meOnServer = Array.isArray(gameState.players) ? gameState.players.find(p => p.id === myStudentProfile.playerId) : Object.values(gameState.players || {}).find(p => p.id === myStudentProfile.playerId);
+  const av = getAvatarInfo(myStudentProfile.avatar);
   const q = gameState.currentQuestion;
 
   mounts.forEach((mount) => {
