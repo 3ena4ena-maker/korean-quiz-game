@@ -1806,20 +1806,36 @@ body.student-only-mode .teacher-control-bar {
   transform: scale(1.4);
 }
 
-/* 탈락자 관람석 */
-.eliminated-bar {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 14px;
-  padding: 8px 16px;
+/* 화면 중간 정보 영역 (단계 안내 배너 + 탈락자 관람석) */
+.stage-mid-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  position: relative;
   z-index: 10;
-  backdrop-filter: blur(4px);
+  margin-bottom: 8px;
+}
+
+/* 탈락자 관람석 (화면 중간에 부드러운 글래스모피즘으로 배치) */
+.eliminated-bar {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 99px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(100, 116, 139, 0.08);
+  max-width: 62%;
+  overflow-x: auto;
 }
 
 .elim-title {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #475569;
   white-space: nowrap;
@@ -1828,26 +1844,109 @@ body.student-only-mode .teacher-control-bar {
 .elim-list {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .elim-chip {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 99px;
-  padding: 3px 10px;
-  font-size: 0.78rem;
+  padding: 2px 8px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #64748b;
+  color: #475569;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .elim-empty {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* 아바타 네임택 내보내기 버튼 (교사가 클릭 시 즉시 퇴장 조치) */
+.btn-kick-avatar {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: 3px;
+  padding: 0;
+  transition: all 0.15s ease;
+  opacity: 0.7;
+}
+
+.avatar-actor:hover .btn-kick-avatar {
+  opacity: 1;
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-kick-avatar:hover {
+  background: #dc2626 !important;
+  transform: scale(1.25);
+}
+
+.btn-kick-chip {
+  background: rgba(148, 163, 184, 0.25);
+  color: #64748b;
+  border: none;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-kick-chip:hover {
+  background: #ef4444;
+  color: #fff;
+  transform: scale(1.15);
+}
+
+/* 처음으로 리셋 버튼 스타일 */
+.btn-subtle-reset {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-subtle-reset:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
 }
 
 /* =========================================

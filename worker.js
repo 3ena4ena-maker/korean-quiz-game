@@ -124,16 +124,14 @@ export class QuizRoom {
 
       const mergedPlayers = {};
 
-      // 1. Preserve all real (non-bot) students and active bots unless clearBotsOnly is requested
+      // 1. Preserve ONLY real (non-bot) students from roomState that might not be in incoming yet
       for (const [id, existingPlayer] of Object.entries(this.roomState.players)) {
         if (!existingPlayer.isBot) {
-          mergedPlayers[id] = { ...existingPlayer };
-        } else if (!msg.clearBotsOnly) {
           mergedPlayers[id] = { ...existingPlayer };
         }
       }
 
-      // 2. Merge incoming players from host
+      // 2. Merge incoming players from host (bots are only included if clearBotsOnly is FALSE)
       if (Array.isArray(incoming.players)) {
         for (const p of incoming.players) {
           if (!p || !p.id) continue;
@@ -223,6 +221,13 @@ export class QuizRoom {
         updatedAt: Date.now()
       };
 
+      this.broadcast();
+      return;
+    }
+
+    if (msg.type === 'host:kick-player' && msg.playerId) {
+      delete this.roomState.players[msg.playerId];
+      this.forwardToAll({ type: 'player:kicked', playerId: msg.playerId });
       this.broadcast();
       return;
     }

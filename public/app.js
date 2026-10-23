@@ -644,6 +644,18 @@ function connectCloudWebSocket() {
 
         if (data.type === 'relay:student-action' && !isStudentUrlMode) {
           handleIncomingStudentAction(data.action, true);
+        } else if (data.type === 'player:kicked') {
+          if (data.playerId && hostPlayersMap[data.playerId]) {
+            delete hostPlayersMap[data.playerId];
+            if (avatarDomMap.has(data.playerId)) {
+              const rec = avatarDomMap.get(data.playerId);
+              if (rec && rec.el) rec.el.remove();
+              avatarDomMap.delete(data.playerId);
+            }
+          }
+          if (data.playerId === myStudentProfile.playerId) {
+            handleKickedStudent();
+          }
         } else if (data.type === 'game:state' && data.state) {
           if (!isStudentUrlMode) {
             mergeRealStudentsFromCloud(data.state);
@@ -683,11 +695,10 @@ let botsClearedAt = 0;
 function mergeRealStudentsFromCloud(cloudState) {
   if (!cloudState || !Array.isArray(cloudState.players)) return;
   let changed = false;
-  const allowBotMerge = (Date.now() - botsClearedAt) > 4000;
 
   cloudState.players.forEach((cp) => {
     if (!cp || !cp.id) return;
-    if (cp.isBot && !allowBotMerge) return;
+    if (cp.isBot) return; // 봇은 선생님이 직접 관리하므로 클라우드에서 재유입 차단
 
     const cleanAvatar = AVATAR_CATALOG[cp.avatar] ? cp.avatar : 'coral_peach';
     const existing = hostPlayersMap[cp.id];
@@ -1090,6 +1101,100 @@ function hostAddBots(count = 1) {
   broadcastHostState({ forceHttp: true });
 }
 
+function hostClearAllBots() {
+  botsClearedAt = Date.now();
+  for (const id of Object.keys(hostPlayersMap)) {
+    if (hostPlayersMap[id].isBot) {
+      delete hostPlayersMap[id];
+      if (avatarDomMap.has(id)) {
+        const rec = avatarDomMap.get(id);
+        if (rec && rec.el) rec.el.remove();
+        avatarDomMap.delete(id);
+      }
+    }
+  }
+  hostBotTimeouts.forEach(t => clearTimeout(t));
+  hostBotTimeouts = [];
+
+  if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+    try { cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' })); } catch (_) {}
+  }
+  fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'teacher:clear-bots' })
+  }).catch(() => {});
+
+  broadcastHostState({ clearBotsOnly: true, forceHttp: true });
+}
+
+function hostResetToBeginning() {
+  clearHostTimers();
+  gameState.phase = 'LOBBY';
+  gameState.questionIndex = 0;
+  gameState.currentQuestion = null;
+  gameState.lastEliminatedIds = [];
+
+  Object.values(hostPlayersMap).forEach(p => {
+    p.alive = true;
+    p.falling = false;
+    p.choice = 'CENTER';
+    p.score = 0;
+    p.emote = null;
+  });
+
+  const winnerOverlay = document.getElementById('winnerOverlay');
+  if (winnerOverlay) winnerOverlay.classList.add('hidden');
+
+  broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true, forceHttp: true });
+}
+
+function hostKickPlayer(playerId) {
+  if (!playerId) return;
+  const player = hostPlayersMap[playerId];
+  delete hostPlayersMap[playerId];
+
+  if (avatarDomMap.has(playerId)) {
+    const rec = avatarDomMap.get(playerId);
+    if (rec && rec.el) rec.el.remove();
+    avatarDomMap.delete(playerId);
+  }
+
+  const kickMsg = { type: 'host:kick-player', playerId };
+  if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+    try { cloudWs.send(JSON.stringify(kickMsg)); } catch (_) {}
+  }
+  fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(kickMsg)
+  }).catch(() => {});
+
+  broadcastHostState({ forceHttp: true });
+}
+
+function handleKickedStudent() {
+  isStudentJoined = false;
+  const card = document.getElementById('studentLobbyCard');
+  if (card) {
+    card.innerHTML = `
+      <div style="text-align:center; padding: 28px 16px;">
+        <div style="font-size:2.6rem; margin-bottom:8px;">🚪</div>
+        <h3 style="font-size:1.15rem; font-weight:800; color:#dc2626; margin-bottom:6px;">대기실에서 퇴장되었습니다</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:18px;">선생님에 의해 퇴장되었습니다. 다시 참여하려면 아래 버튼을 누르세요.</p>
+        <button class="btn btn-primary" id="rejoinAfterKickBtn" style="padding:10px 22px; font-weight:700;">다시 입장하기</button>
+      </div>
+    `;
+    const btn = document.getElementById('rejoinAfterKickBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        isStudentJoined = false;
+        renderStudentCreatorScreen();
+      });
+    }
+  }
+}
+
 // =========================================================================
 // 초기 실행 및 상태 반영
 // =========================================================================
@@ -1175,6 +1280,17 @@ function switchView(tabName) {
 }
 
 function bindStageEvents() {
+  // 아바타 및 탈락자 관람석 내보내기(퇴장) 클릭 이벤트 위임
+  document.addEventListener('click', (e) => {
+    const kickBtn = e.target.closest('[data-kick-id]');
+    if (kickBtn) {
+      e.stopPropagation();
+      e.preventDefault();
+      const pid = kickBtn.getAttribute('data-kick-id');
+      if (pid) hostKickPlayer(pid);
+    }
+  });
+
   document.querySelectorAll('.mode-tab').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.tab));
   });
@@ -1245,28 +1361,12 @@ function bindStageEvents() {
   if (addBotsBtn) {
     addBotsBtn.addEventListener('click', () => {
       hostAddBots(1);
-      showToast('가상 학생 1명이 대기 광장에 입장했습니다.');
     });
   }
 
   const clearBotsBtn = document.getElementById('clearBotsBtn');
   if (clearBotsBtn) {
-    clearBotsBtn.addEventListener('click', () => {
-      botsClearedAt = Date.now();
-      for (const id of Object.keys(hostPlayersMap)) {
-        if (hostPlayersMap[id].isBot) delete hostPlayersMap[id];
-      }
-      if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
-        try { cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' })); } catch (_) {}
-      }
-      fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'teacher:clear-bots' })
-      }).catch(() => {});
-      broadcastHostState({ clearBotsOnly: true, forceHttp: true });
-      showToast('가상 학생 봇을 모두 내보냈습니다.');
-    });
+    clearBotsBtn.addEventListener('click', hostClearAllBots);
   }
 
   const gatherBtn = document.getElementById('gatherCenterBtn') || document.getElementById('reviveAllBtn');
@@ -1291,19 +1391,12 @@ function bindStageEvents() {
 
   const resetLobbyBtn = document.getElementById('resetLobbyBtn');
   if (resetLobbyBtn) {
-    resetLobbyBtn.addEventListener('click', () => {
-      clearHostTimers();
-      gameState.phase = 'LOBBY';
-      gameState.questionIndex = 0;
-      gameState.currentQuestion = null;
-      Object.values(hostPlayersMap).forEach(p => {
-        p.alive = true;
-        p.falling = false;
-        p.choice = 'CENTER';
-        p.score = 0;
-      });
-      broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
-    });
+    resetLobbyBtn.addEventListener('click', hostResetToBeginning);
+  }
+
+  const resetGameRoundBtn = document.getElementById('resetGameRoundBtn');
+  if (resetGameRoundBtn) {
+    resetGameRoundBtn.addEventListener('click', hostResetToBeginning);
   }
 
   const startBtn = document.getElementById('startGameBtn');
@@ -1311,7 +1404,6 @@ function bindStageEvents() {
     startBtn.addEventListener('click', () => {
       if (Object.keys(hostPlayersMap).length === 0) {
         hostAddBots(1);
-        showToast('가상 학생 1명이 함께 입장했습니다.');
       }
       hostStartQuestionRound(0);
     });
@@ -1546,7 +1638,7 @@ function renderStageUI() {
   } else {
     elimList.innerHTML = eliminatedPlayers.map(p => {
       const av = getAvatarInfo(p.avatar);
-      return `<span class="elim-chip">${av.iconEmoji} ${escapeHtml(p.name)}</span>`;
+      return `<span class="elim-chip">${av.iconEmoji} ${escapeHtml(p.name)}<button class="btn-kick-chip" data-kick-id="${escapeHtml(p.id)}" title="${escapeHtml(p.name)} 내보내기">✕</button></span>`;
     }).join('');
   }
 
@@ -1625,6 +1717,7 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
       <div class="avatar-nametag">
         <span class="av-flag">${escapeHtml(player.country || '🌏')}</span>
         <span class="av-name">${escapeHtml(player.name)}</span>
+        <button class="btn-kick-avatar" data-kick-id="${escapeHtml(player.id)}" title="${escapeHtml(player.name)} 내보내기">✕</button>
       </div>
       <div class="avatar-creature" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
         <div class="creature-body">
