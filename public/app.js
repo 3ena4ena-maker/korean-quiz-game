@@ -1,7 +1,10 @@
 // =========================================================================
-// 한글 징검다리 서바이벌 퀴즈 - 클라이언트 & P2P 멀티플레이어 통합 엔진 (app.js)
-// GitHub Pages 정적 배포 및 로컬 서버 환경 모두 100% 실시간 동시접속 지원
+// 한글 징검다리 서바이벌 퀴즈 - 클라이언트 & Cloudflare 실시간 동기화 엔진 (app.js)
+// Cloudflare Durable Object WebSocket + HTTP 이중 채널로 스마트폰/PC 100% 실시간 연동
 // =========================================================================
+
+const CLOUD_SYNC_HTTP = 'https://korean-quiz-sync.3ena4ena.workers.dev';
+const CLOUD_SYNC_WS   = 'wss://korean-quiz-sync.3ena4ena.workers.dev';
 
 const AVATAR_CATALOG = {
   bear:    { emoji: '🐻', label: '곰돌이', headColor: '#fde68a', shirtColor: '#3b82f6' },
@@ -294,7 +297,7 @@ class SoundFX {
 const sfx = new SoundFX();
 
 // =========================================================================
-// 전역 상태 및 멀티플레이 통신 채널 (BroadcastChannel + PeerJS WebRTC)
+// 전역 상태
 // =========================================================================
 const urlParams = new URLSearchParams(window.location.search);
 const isStudentUrlMode = urlParams.get('role') === 'student';
@@ -328,7 +331,6 @@ function loadQuizDatabaseFromStorage() {
 
 function saveQuizDatabaseToStorage() {
   localStorage.setItem('kor_quiz_custom_db_v1', JSON.stringify(quizDatabase));
-  // 로컬 서버가 켜져 있으면 서버 파일에도 백업 시도
   fetch('./api/quizzes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -361,7 +363,8 @@ let prevTimeInt = null;
 const avatarDomMap = new Map();
 
 let myStudentProfile = loadMyStudentProfile();
-let isStudentJoined = false;
+// 학생이 QR코드로 처음 접속했을 때 자신의 이름/아바타를 확인하고 입장할 수 있게 함 (동시에 대기광장에도 즉시 등록)
+let isStudentJoined = !isStudentUrlMode ? false : Boolean(sessionStorage.getItem('kor_quiz_joined_session'));
 let isEditingStudentProfile = false;
 
 function loadMyStudentProfile() {
@@ -375,7 +378,7 @@ function loadMyStudentProfile() {
   const pickAv = randomAvatars[Math.floor(Math.random() * randomAvatars.length)];
   const profile = {
     playerId: 'stu_' + Math.random().toString(36).slice(2, 10),
-    name: '민수',
+    name: '학생' + Math.floor(10 + Math.random() * 89),
     avatar: pickAv,
     country: '🇰🇷'
   };
@@ -388,24 +391,22 @@ function saveMyStudentProfile() {
 }
 
 // =========================================================================
-// 실시간 동기화 브릿지 (PeerJS WebRTC + BroadcastChannel)
+// Cloudflare Durable Object 실시간 멀티플레이 브릿지 (WebSocket + HTTP 이중 채널)
 // =========================================================================
 const bcChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel(`kor_quiz_room_${roomCodeParam}`)
   : null;
 
-let peerInstance = null;
-const peerConnections = new Map(); // studentPeerId -> DataConnection
-let hostConnection = null;
+let cloudWs = null;
+let cloudReconnectTimer = null;
 
 function initMultiplayerNetworking() {
-  // 1. 같은 컴퓨터 브라우저 탭 간 즉시 동기화 (BroadcastChannel)
+  // 1. 같은 컴퓨터 브라우저 탭 간 즉시 동기화
   if (bcChannel) {
     bcChannel.onmessage = (ev) => {
       const msg = ev.data;
       if (!msg || !msg.type) return;
       if (!isStudentUrlMode) {
-        // 선생님(호스트) 화면이 학생 액션을 수신
         handleIncomingStudentAction(msg);
       }
       if (msg.type === 'game:state') {
@@ -414,90 +415,159 @@ function initMultiplayerNetworking() {
     };
   }
 
-  // 2. 스마트폰/태블릿/다른 PC 간 인터넷 실시간 동시접속 (PeerJS WebRTC)
-  if (typeof Peer === 'undefined') return;
+  // 2. Cloudflare 실시간 클라우드 서버 연결 (스마트폰 LTE/5G/Wi-Fi 모두 지원)
+  connectCloudWebSocket();
 
-  const hostPeerId = `kor-quiz-3ena-room-${roomCodeParam}`;
+  // 3. HTTP 폴백 동기화 (모바일 브라우저 백그라운드 전환이나 방화벽 대비)
+  setInterval(() => {
+    pullCloudRoomState();
+  }, 2000);
+}
 
-  if (!isStudentUrlMode) {
-    // 선생님(호스트) 모드로 Peer 등록
-    try {
-      peerInstance = new Peer(hostPeerId);
-      peerInstance.on('open', () => {
-        broadcastHostState();
-      });
-      peerInstance.on('connection', (conn) => {
-        conn.on('open', () => {
-          peerConnections.set(conn.peer, conn);
-          conn.send({ type: 'game:state', state: buildPublicState() });
-        });
-        conn.on('data', (data) => {
-          handleIncomingStudentAction(data);
-        });
-        conn.on('close', () => {
-          peerConnections.delete(conn.peer);
-        });
-      });
-      peerInstance.on('error', (err) => {
-        // 이미 다른 탭에서 호스트가 열려있는 경우 클라이언트로 연결
-        if (err.type === 'unavailable-id') {
-          connectAsPeerClient(hostPeerId);
+function connectCloudWebSocket() {
+  if (cloudWs && (cloudWs.readyState === WebSocket.OPEN || cloudWs.readyState === WebSocket.CONNECTING)) {
+    return;
+  }
+
+  try {
+    cloudWs = new WebSocket(`${CLOUD_SYNC_WS}/?room=${encodeURIComponent(roomCodeParam)}`);
+
+    cloudWs.onopen = () => {
+      if (isStudentUrlMode || isStudentJoined) {
+        // 학생 화면이면 접속 즉시 내 아바타를 대기광장에 등록!
+        postStudentJoinToCloud();
+      } else {
+        // 선생님 화면이면 현재 클라우드 방에 이미 들어와 있는 학생들을 먼저 불러옴
+        pullCloudRoomState();
+      }
+    };
+
+    cloudWs.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (!data || !data.type) return;
+
+        if (data.type === 'relay:student-action' && !isStudentUrlMode) {
+          handleIncomingStudentAction(data.action, true);
+        } else if (data.type === 'game:state' && data.state) {
+          if (!isStudentUrlMode) {
+            mergeRealStudentsFromCloud(data.state);
+          } else {
+            applyNewGameState(data.state);
+          }
         }
-      });
-    } catch (e) {
-      console.warn('Peer host init warning:', e);
-    }
-  } else {
-    // 학생 전용 화면은 호스트 Peer에 연결
-    connectAsPeerClient(hostPeerId);
+      } catch (_) {}
+    };
+
+    cloudWs.onclose = () => {
+      if (cloudReconnectTimer) clearTimeout(cloudReconnectTimer);
+      cloudReconnectTimer = setTimeout(connectCloudWebSocket, 1800);
+    };
+  } catch (e) {
+    console.warn('Cloud WebSocket error:', e);
   }
 }
 
-function connectAsPeerClient(hostPeerId) {
+async function pullCloudRoomState() {
   try {
-    peerInstance = new Peer();
-    peerInstance.on('open', () => {
-      hostConnection = peerInstance.connect(hostPeerId, { reliable: true });
-      hostConnection.on('open', () => {
-        if (isStudentJoined || isStudentUrlMode) {
-          sendStudentAction({
-            type: 'student:join',
-            payload: {
-              playerId: myStudentProfile.playerId,
-              name: myStudentProfile.name,
-              avatar: myStudentProfile.avatar,
-              country: myStudentProfile.country
-            }
-          });
+    const res = await fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.state) {
+      if (!isStudentUrlMode) {
+        mergeRealStudentsFromCloud(data.state);
+      } else {
+        applyNewGameState(data.state);
+      }
+    }
+  } catch (_) {}
+}
+
+function mergeRealStudentsFromCloud(cloudState) {
+  if (!cloudState || !Array.isArray(cloudState.players)) return;
+  let changed = false;
+
+  cloudState.players.forEach((cp) => {
+    if (!cp || !cp.id || cp.isBot) return;
+    const existing = hostPlayersMap[cp.id];
+    if (!existing) {
+      hostPlayersMap[cp.id] = {
+        id: cp.id,
+        name: cp.name,
+        avatar: cp.avatar,
+        country: cp.country,
+        choice: cp.choice || 'CENTER',
+        alive: cp.alive !== undefined ? cp.alive : true,
+        falling: false,
+        score: cp.score || 0,
+        isBot: false,
+        emote: cp.emote || null
+      };
+      changed = true;
+    } else {
+      if (
+        existing.name !== cp.name ||
+        existing.avatar !== cp.avatar ||
+        existing.country !== cp.country ||
+        existing.emote !== cp.emote ||
+        (gameState.phase === 'QUESTION' && cp.choice !== existing.choice && (cp.choice === 'A' || cp.choice === 'B'))
+      ) {
+        existing.name = cp.name;
+        existing.avatar = cp.avatar;
+        existing.country = cp.country;
+        existing.emote = cp.emote;
+        if (gameState.phase === 'QUESTION' && (cp.choice === 'A' || cp.choice === 'B')) {
+          existing.choice = cp.choice;
         }
-      });
-      hostConnection.on('data', (data) => {
-        if (data && data.type === 'game:state') {
-          applyNewGameState(data.state);
-        }
-      });
-    });
-  } catch (e) {
-    console.warn('Peer client connect warning:', e);
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) {
+    applyNewGameState(buildPublicState());
   }
+}
+
+function postStudentJoinToCloud() {
+  const joinMsg = {
+    type: 'student:join',
+    payload: {
+      playerId: myStudentProfile.playerId,
+      name: myStudentProfile.name,
+      avatar: myStudentProfile.avatar,
+      country: myStudentProfile.country
+    }
+  };
+  sendStudentAction(joinMsg);
 }
 
 function sendStudentAction(actionMsg) {
-  // 같은 화면(호스트)일 때는 직접 처리
   if (!isStudentUrlMode) {
     handleIncomingStudentAction(actionMsg);
   }
-  // BroadcastChannel로 전송
   if (bcChannel) {
     bcChannel.postMessage(actionMsg);
   }
-  // PeerJS WebRTC로 전송
-  if (hostConnection && hostConnection.open) {
-    hostConnection.send(actionMsg);
+  if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+    cloudWs.send(JSON.stringify(actionMsg));
   }
+  // HTTP POST 이중 보장 (WebSocket 연결 전이라도 즉시 서버에 반영)
+  fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(actionMsg)
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.state && isStudentUrlMode) {
+        applyNewGameState(data.state);
+      }
+    })
+    .catch(() => {});
 }
 
-function handleIncomingStudentAction(msg) {
+function handleIncomingStudentAction(msg, fromCloudRelay = false) {
   if (!msg || !msg.type) return;
 
   if (msg.type === 'student:request-state') {
@@ -521,7 +591,7 @@ function handleIncomingStudentAction(msg) {
       isBot: false,
       emote: null
     };
-    broadcastHostState();
+    broadcastHostState({ skipCloudPush: fromCloudRelay });
   } else if (msg.type === 'student:choose') {
     if (gameState.phase !== 'QUESTION') return;
     const { playerId, choice } = msg.payload || {};
@@ -529,13 +599,13 @@ function handleIncomingStudentAction(msg) {
     if (!player || !player.alive) return;
     if (choice !== 'A' && choice !== 'B') return;
     player.choice = choice;
-    broadcastHostState();
+    broadcastHostState({ skipCloudPush: fromCloudRelay });
   } else if (msg.type === 'student:emote') {
     const { playerId, emote } = msg.payload || {};
     const player = hostPlayersMap[playerId];
     if (!player) return;
     player.emote = String(emote || '').slice(0, 16);
-    broadcastHostState();
+    broadcastHostState({ skipCloudPush: fromCloudRelay });
     setTimeout(() => {
       if (hostPlayersMap[playerId] && hostPlayersMap[playerId].emote === emote) {
         hostPlayersMap[playerId].emote = null;
@@ -600,16 +670,31 @@ function buildPublicState() {
   };
 }
 
-function broadcastHostState() {
+function broadcastHostState(options = {}) {
   const pubState = buildPublicState();
   applyNewGameState(pubState);
 
   if (bcChannel) {
     bcChannel.postMessage({ type: 'game:state', state: pubState });
   }
-  for (const conn of peerConnections.values()) {
-    if (conn.open) {
-      conn.send({ type: 'game:state', state: pubState });
+
+  if (!options.skipCloudPush && !isStudentUrlMode) {
+    const syncPayload = {
+      type: 'host:sync-state',
+      state: pubState,
+      resetChoices: Boolean(options.resetChoices),
+      reviveAll: Boolean(options.reviveAll),
+      resetScores: Boolean(options.resetScores),
+      clearBotsOnly: Boolean(options.clearBotsOnly)
+    };
+    if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+      cloudWs.send(JSON.stringify(syncPayload));
+    } else {
+      fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(syncPayload)
+      }).catch(() => {});
     }
   }
 }
@@ -623,7 +708,9 @@ function hostStartQuestionRound(index) {
   const question = activeSet.questions[qIdx];
 
   const aliveList = Object.values(hostPlayersMap).filter(p => p.alive);
+  let revivedEveryone = false;
   if (aliveList.length === 0 && Object.keys(hostPlayersMap).length > 0) {
+    revivedEveryone = true;
     Object.values(hostPlayersMap).forEach(p => {
       p.alive = true;
       p.falling = false;
@@ -644,7 +731,7 @@ function hostStartQuestionRound(index) {
   gameState.phase = 'QUESTION';
   gameState.lastEliminatedIds = [];
 
-  broadcastHostState();
+  broadcastHostState({ resetChoices: true, reviveAll: revivedEveryone });
   hostScheduleBotMoves();
 
   hostTimerInterval = setInterval(() => {
@@ -758,7 +845,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchView('student-full');
   }
 
-  // 로컬 서버에서 돌아가는 경우 LAN IP 정보 가져오기 시도
   try {
     const res = await fetch('./api/server-info');
     if (res.ok) {
@@ -780,12 +866,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMultiplayerNetworking();
 
   if (!isStudentUrlMode) {
+    await pullCloudRoomState();
     broadcastHostState();
   } else {
-    joinAsStudent();
-    if (bcChannel) {
-      bcChannel.postMessage({ type: 'student:request-state' });
-    }
+    // 학생이 QR코드로 접속하자마자 즉시 대기광장에 아바타를 올리고, 이름/캐릭터 변경도 실시간 반영
+    postStudentJoinToCloud();
   }
   renderStudentControllers();
 });
@@ -874,7 +959,7 @@ function bindStageEvents() {
       p.choice = 'CENTER';
       p.score = 0;
     });
-    broadcastHostState();
+    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
     showToast('수업 세트가 변경되었습니다.');
   });
 
@@ -894,7 +979,15 @@ function bindStageEvents() {
     for (const id of Object.keys(hostPlayersMap)) {
       if (hostPlayersMap[id].isBot) delete hostPlayersMap[id];
     }
-    broadcastHostState();
+    if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+      cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' }));
+    }
+    fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'teacher:clear-bots' })
+    }).catch(() => {});
+    broadcastHostState({ clearBotsOnly: true });
     showToast('가상 학생 봇을 모두 내보냈습니다.');
   });
 
@@ -905,7 +998,7 @@ function bindStageEvents() {
       p.choice = 'CENTER';
     });
     gameState.lastEliminatedIds = [];
-    broadcastHostState();
+    broadcastHostState({ resetChoices: true, reviveAll: true });
     showToast('⚡ 탈락했던 모든 아바타가 무대 위로 부활했습니다!');
   });
 
@@ -920,7 +1013,7 @@ function bindStageEvents() {
       p.choice = 'CENTER';
       p.score = 0;
     });
-    broadcastHostState();
+    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
   });
 
   document.getElementById('startGameBtn').addEventListener('click', () => {
@@ -968,7 +1061,7 @@ function bindStageEvents() {
       p.choice = 'CENTER';
       p.score = 0;
     });
-    broadcastHostState();
+    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
   });
 
   document.getElementById('winnerToEditorBtn').addEventListener('click', () => {
@@ -1318,15 +1411,8 @@ function renderWinnerPodium() {
 // =========================================================================
 function joinAsStudent() {
   isStudentJoined = true;
-  sendStudentAction({
-    type: 'student:join',
-    payload: {
-      playerId: myStudentProfile.playerId,
-      name: myStudentProfile.name,
-      avatar: myStudentProfile.avatar,
-      country: myStudentProfile.country
-    }
-  });
+  sessionStorage.setItem('kor_quiz_joined_session', '1');
+  postStudentJoinToCloud();
   renderStudentControllers();
 }
 
@@ -1383,6 +1469,8 @@ function renderStudentControllers() {
       mount.querySelectorAll('.st-flag-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           myStudentProfile.country = btn.dataset.flag;
+          saveMyStudentProfile();
+          postStudentJoinToCloud();
           renderStudentControllers();
         });
       });
@@ -1390,6 +1478,8 @@ function renderStudentControllers() {
       mount.querySelectorAll('.avatar-pick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           myStudentProfile.avatar = btn.dataset.avatar;
+          saveMyStudentProfile();
+          postStudentJoinToCloud();
           renderStudentControllers();
         });
       });
@@ -1419,9 +1509,9 @@ function renderStudentControllers() {
       `;
     } else if (gameState.phase === 'LOBBY') {
       centerContentHtml = `
-        <div class="st-question-prompt">
-          ✨ 출발선에서 대기 중입니다!<br/>
-          <small style="color:#64748b;">선생님이 문제를 시작하면 A / B 버튼이 열립니다.</small>
+        <div class="st-question-prompt" style="background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0;">
+          🟢 <strong>교실 대기광장에 입장 완료!</strong><br/>
+          <small style="color:#065f46;">선생님 화면 중앙 출발선에 내 아바타가 서 있어요. 문제가 시작되면 A / B 버튼이 열립니다!</small>
         </div>
       `;
     } else if (gameState.phase === 'QUESTION' && q) {

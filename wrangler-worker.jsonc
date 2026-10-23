@@ -1,0 +1,19 @@
+{
+  "name": "korean-quiz-sync",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-23",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "QUIZ_ROOM",
+        "class_name": "QuizRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["QuizRoom"]
+    }
+  ]
+}
