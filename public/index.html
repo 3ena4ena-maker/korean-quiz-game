@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_14" />
+  <link rel="stylesheet" href="./style.css?v=20261023_15" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -142,9 +142,27 @@
           대기실: 학생이 모이면 문제를 시작하세요
         </div>
 
-        <!-- 3개 구역 3D 플랫폼 컨테이너 (시작 광장 + 좌우 대칭 A/B 플랫폼) -->
+        <!-- 하늘 배경 3D 몽실 구름 클러스터 (참고 이미지 완벽 구현) -->
+        <div class="sky-clouds-backdrop">
+          <div class="puff-cloud cloud-1">
+            <span class="cloud-bubble cb1"></span>
+            <span class="cloud-bubble cb2"></span>
+            <span class="cloud-bubble cb3"></span>
+          </div>
+          <div class="puff-cloud cloud-2">
+            <span class="cloud-bubble cb1"></span>
+            <span class="cloud-bubble cb2"></span>
+            <span class="cloud-bubble cb3"></span>
+          </div>
+          <div class="puff-cloud cloud-3">
+            <span class="cloud-bubble cb1"></span>
+            <span class="cloud-bubble cb2"></span>
+          </div>
+        </div>
+
+        <!-- 3개 구역 3D 플랫폼 컨테이너 (시작 광장 + 좌우 대칭 A/B 부유섬) -->
         <div class="platforms-container">
-          <!-- 왼쪽: A 플랫폼 (하늘색, 큼직한 표지판) -->
+          <!-- 왼쪽: A 부유섬 플랫폼 (하늘색, 큼직한 표지판) -->
           <div class="platform-zone zone-a" id="platformA">
             <div class="zone-header">
               <span class="zone-letter">A</span>
@@ -159,26 +177,62 @@
                 <span>탈락</span>
               </div>
             </div>
+            <!-- 섬 하단 원뿔형 3D 암석 & 구름 받침 -->
+            <div class="island-rock-cone">
+              <div class="rock-facet-left"></div>
+              <div class="rock-facet-mid"></div>
+              <div class="rock-facet-right"></div>
+              <div class="bottom-cloud-cushion">
+                <span class="cushion-puff puff-1"></span>
+                <span class="cushion-puff puff-2"></span>
+                <span class="cushion-puff puff-3"></span>
+              </div>
+            </div>
           </div>
 
-          <!-- 가운데: 시작 광장 (크림/밝은회색 차분한 바닥 + 원형 문양과 출발선) -->
+          <!-- 가운데: 시작 광장 (구름 위의 둥근 3D 플랫폼, 잔디·나무·바위·암석 부유섬) -->
           <div class="platform-zone zone-center" id="platformCenter">
+            <!-- 부유섬 상단 자연 풍경 (파스텔 몽실 나무 & 둥근 바위) -->
+            <div class="island-scenery">
+              <div class="island-tree tree-left">
+                <span class="tree-canopy canopy-1"></span>
+                <span class="tree-canopy canopy-2"></span>
+                <span class="tree-canopy canopy-3"></span>
+                <span class="tree-trunk"></span>
+              </div>
+              <div class="island-rocks">
+                <span class="island-rock rock-1"></span>
+                <span class="island-rock rock-2"></span>
+                <span class="island-rock rock-3"></span>
+              </div>
+              <div class="island-tree tree-right">
+                <span class="tree-canopy canopy-1"></span>
+                <span class="tree-canopy canopy-2"></span>
+                <span class="tree-trunk"></span>
+              </div>
+            </div>
+
             <div class="zone-header">
-              <span class="zone-word" id="zoneCenterWord">시작 광장</span>
+              <span class="zone-word" id="zoneCenterWord">시작 광장 (하늘 부유섬)</span>
               <span class="zone-count" id="zoneCenterCount">0명</span>
             </div>
             <div class="platform-floor" id="floorCenter">
               <div class="trapdoor-left"></div>
               <div class="trapdoor-right"></div>
               <div class="platform-surface">
-                <div class="plaza-pattern">
-                  <div class="plaza-circle">
-                    <div class="plaza-inner-circle"></div>
-                  </div>
-                  <div class="start-line">
-                    <span class="line-dash"></span>
-                    <span class="line-text">출발선</span>
-                    <span class="line-dash"></span>
+                <!-- 부유섬 상단 잔디 대지 + 흙길 + 시냇물 -->
+                <div class="island-ground">
+                  <div class="island-stream"></div>
+                  <div class="island-path"></div>
+                  <div class="plaza-pattern">
+                    <div class="plaza-circle">
+                      <div class="plaza-inner-circle"></div>
+                    </div>
+                    <div class="start-line">
+                      <span class="line-dash"></span>
+                      <span class="line-text">출발선</span>
+                      <span class="line-dash"></span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -186,9 +240,21 @@
                 <span>시간 초과</span>
               </div>
             </div>
+
+            <!-- 부유섬 하단 원뿔형 3D 암석 & 구름 받침 (참고 이미지 완벽 구현) -->
+            <div class="island-rock-cone">
+              <div class="rock-facet-left"></div>
+              <div class="rock-facet-mid"></div>
+              <div class="rock-facet-right"></div>
+              <div class="bottom-cloud-cushion">
+                <span class="cushion-puff puff-1"></span>
+                <span class="cushion-puff puff-2"></span>
+                <span class="cushion-puff puff-3"></span>
+              </div>
+            </div>
           </div>
 
-          <!-- 오른쪽: B 플랫폼 (대칭 구조, 맑은 파랑 계열) -->
+          <!-- 오른쪽: B 부유섬 플랫폼 (대칭 구조, 맑은 파랑 계열) -->
           <div class="platform-zone zone-b" id="platformB">
             <div class="zone-header">
               <span class="zone-letter">B</span>
@@ -201,6 +267,17 @@
               <div class="platform-surface"></div>
               <div class="abyss-pit">
                 <span>탈락</span>
+              </div>
+            </div>
+            <!-- 섬 하단 원뿔형 3D 암석 & 구름 받침 -->
+            <div class="island-rock-cone">
+              <div class="rock-facet-left"></div>
+              <div class="rock-facet-mid"></div>
+              <div class="rock-facet-right"></div>
+              <div class="bottom-cloud-cushion">
+                <span class="cushion-puff puff-1"></span>
+                <span class="cushion-puff puff-2"></span>
+                <span class="cushion-puff puff-3"></span>
               </div>
             </div>
           </div>

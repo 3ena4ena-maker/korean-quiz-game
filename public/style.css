@@ -585,7 +585,7 @@ body.student-only-mode .nav-menu {
    ========================================= */
 .stage-sky {
   flex: 1;
-  min-height: 470px;
+  min-height: 540px;
   background: radial-gradient(circle at 50% 15%, #eff6ff 0%, #e0f2fe 45%, #f1f5f9 100%);
   border-radius: 28px;
   position: relative;
@@ -594,29 +594,58 @@ body.student-only-mode .nav-menu {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 18px 24px 14px;
+  padding: 18px 24px 28px;
   box-shadow: inset 0 2px 14px rgba(255, 255, 255, 0.8), 0 12px 36px rgba(99, 102, 241, 0.06);
   perspective: 1000px;
 }
 
-/* 둥실둥실 구름 배경 장식 */
-.cloud {
+/* 하늘 배경 3D 몽실 구름 클러스터 (참고 이미지 완벽 구현) */
+.sky-clouds-backdrop {
   position: absolute;
-  font-size: 3.5rem;
-  opacity: 0.45;
+  inset: 0;
   pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 4px 10px rgba(186, 230, 253, 0.5));
-  animation: floatCloud 18s ease-in-out infinite alternate;
+  z-index: 1;
 }
-.cloud-1 { top: 12px; left: 5%; animation-duration: 16s; }
-.cloud-2 { top: 35px; right: 7%; font-size: 4rem; animation-duration: 22s; }
-.cloud-3 { bottom: 70px; left: 24%; font-size: 2.8rem; animation-duration: 19s; }
-.cloud-4 { top: 18px; left: 50%; font-size: 3.2rem; animation-duration: 24s; }
 
-@keyframes floatCloud {
-  from { transform: translateX(-18px); }
-  to { transform: translateX(18px); }
+.puff-cloud {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 6px 12px rgba(148, 163, 184, 0.2));
+  animation: floatCloudDrift 22s ease-in-out infinite alternate;
+}
+
+.puff-cloud.cloud-1 {
+  top: 18px;
+  left: 6%;
+  animation-duration: 20s;
+}
+
+.puff-cloud.cloud-2 {
+  top: 28px;
+  right: 8%;
+  animation-duration: 25s;
+}
+
+.puff-cloud.cloud-3 {
+  bottom: 90px;
+  right: 22%;
+  animation-duration: 18s;
+}
+
+.cloud-bubble {
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 6px rgba(148, 163, 184, 0.22);
+}
+
+.puff-cloud .cb1 { width: 44px; height: 32px; }
+.puff-cloud .cb2 { width: 56px; height: 42px; margin-left: -16px; margin-top: -8px; z-index: 2; }
+.puff-cloud .cb3 { width: 38px; height: 28px; margin-left: -14px; }
+
+@keyframes floatCloudDrift {
+  from { transform: translateX(-15px) translateY(0); }
+  to { transform: translateX(15px) translateY(-5px); }
 }
 
 .stage-status-banner {
@@ -637,22 +666,22 @@ body.student-only-mode .nav-menu {
   position: relative;
   flex: 1;
   display: grid;
-  grid-template-columns: 1.15fr 0.95fr 1.15fr;
+  grid-template-columns: 1fr 1.15fr 1fr;
   gap: 22px;
   align-items: stretch;
-  margin: 14px 0 10px;
+  margin: 18px 0 24px;
   z-index: 5;
 }
 
-/* 구름 위의 둥근 3D 아일랜드 플랫폼 공통 (A와 B는 동일한 구조, 대칭) */
+/* 구름 위의 둥근 3D 아일랜드 플랫폼 공통 */
 .platform-zone {
   display: flex;
   flex-direction: column;
   position: relative;
-  border-radius: 32px;
-  padding: 10px 12px 16px;
+  border-radius: 36px;
+  padding: 10px 12px 14px;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-  animation: islandFloat 4.2s ease-in-out infinite alternate;
+  animation: islandFloat 4.5s ease-in-out infinite alternate;
 }
 
 /* A 플랫폼 (맑은 하늘색) */
@@ -660,31 +689,213 @@ body.student-only-mode .nav-menu {
   animation-delay: 0s;
   background: #f0f9ff;
   border: 2px solid #bae6fd;
-  box-shadow: 0 14px 0 #7dd3fc, 0 22px 35px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 12px 0 #7dd3fc, 0 20px 30px rgba(14, 165, 233, 0.15);
 }
 
-/* 가운데 시작 광장 (크림색 & 밝은 회색으로 차분하게 유지) */
+/* 가운데 시작 광장 (구름 위의 둥근 3D 부유섬: 잔디·나무·바위) */
 .platform-zone.zone-center {
-  animation-delay: 0.7s;
-  background: #faf8f5;
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 14px 0 #cbd5e1, 0 22px 35px rgba(0, 0, 0, 0.06);
+  animation-delay: 0.8s;
+  background: #f4fbe8;
+  border: 2px solid #cce899;
+  border-radius: 42px;
+  box-shadow: 0 14px 0 #a5d365, 0 24px 35px rgba(101, 163, 13, 0.18);
 }
 
-/* B 플랫폼 (맑은 파란색 계열, A와 완전히 동일한 구조) */
+/* B 플랫폼 (맑은 파란색 계열) */
 .platform-zone.zone-b {
-  animation-delay: 1.4s;
+  animation-delay: 1.6s;
   background: #eff6ff;
   border: 2px solid #bfdbfe;
-  box-shadow: 0 14px 0 #93c5fd, 0 22px 35px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 12px 0 #93c5fd, 0 20px 30px rgba(37, 99, 235, 0.15);
 }
 
 @keyframes islandFloat {
   0% { transform: translateY(0px); }
-  100% { transform: translateY(-7px); }
+  100% { transform: translateY(-8px); }
 }
 
-/* 플랫폼 상단 큼직한 표지판 (A, B가 선명하게 돋보임) */
+/* =========================================
+   시작 광장 상단 자연 풍경 데코 (파스텔 몽실 나무 & 둥근 바위)
+   ========================================= */
+.island-scenery {
+  position: absolute;
+  top: -46px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 몽실몽실 파스텔 볼 나무 */
+.island-tree {
+  position: relative;
+  width: 48px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tree-trunk {
+  width: 8px;
+  height: 18px;
+  background: #966b44;
+  border-radius: 4px;
+  box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.2);
+  transform: rotate(3deg);
+}
+
+.tree-canopy {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.12),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.65),
+              0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.tree-left .canopy-1 {
+  width: 28px;
+  height: 28px;
+  background: radial-gradient(circle at 35% 35%, #e0f8ce 0%, #b4d8b8 70%, #87be9a 100%);
+  top: 6px;
+  left: 10px;
+  z-index: 2;
+}
+.tree-left .canopy-2 {
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle at 35% 35%, #c8eddf 0%, #8ec5ba 70%, #68a79b 100%);
+  top: 18px;
+  left: 2px;
+  z-index: 3;
+}
+.tree-left .canopy-3 {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 35% 35%, #ebf9d8 0%, #bde2c4 70%, #9bc4a3 100%);
+  top: 16px;
+  right: 3px;
+  z-index: 1;
+}
+
+.tree-right .canopy-1 {
+  width: 28px;
+  height: 28px;
+  background: radial-gradient(circle at 35% 35%, #e2fbd4 0%, #aedaa5 70%, #83c076 100%);
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+}
+.tree-right .canopy-2 {
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(circle at 35% 35%, #d5f4eb 0%, #94cdc5 70%, #6db3a9 100%);
+  top: 18px;
+  right: 0px;
+  z-index: 3;
+}
+
+/* 둥근 로우폴리 바위 무리 */
+.island-rocks {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  margin-bottom: 2px;
+}
+
+.island-rock {
+  border-radius: 12px 12px 4px 4px;
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+              0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.rock-1 {
+  width: 20px;
+  height: 26px;
+  background: linear-gradient(135deg, #d8d3ca 0%, #b8b2a7 60%, #9a9489 100%);
+  clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+}
+
+.rock-2 {
+  width: 26px;
+  height: 34px;
+  background: linear-gradient(135deg, #e4dfd6 0%, #c4beb3 60%, #a49e93 100%);
+  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+  margin: 0 -2px;
+}
+
+.rock-3 {
+  width: 18px;
+  height: 20px;
+  background: linear-gradient(135deg, #ccc7be 0%, #aba59a 60%, #8e887d 100%);
+  clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+}
+
+/* =========================================
+   부유섬 하단 3D 원뿔형 암석 & 구름 받침 (참고 이미지 완벽 재현)
+   ========================================= */
+.island-rock-cone {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 82%;
+  height: 68px;
+  display: flex;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.rock-facet-left {
+  flex: 1;
+  height: 100%;
+  background: linear-gradient(180deg, #b8b2a8 0%, #8c857b 60%, #686259 100%);
+  clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 35% 100%);
+}
+
+.rock-facet-mid {
+  flex: 1.4;
+  height: 100%;
+  background: linear-gradient(180deg, #c7c1b8 0%, #9e978c 60%, #756f65 100%);
+  clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%);
+}
+
+.rock-facet-right {
+  flex: 1;
+  height: 100%;
+  background: linear-gradient(180deg, #9e978d 0%, #766f65 60%, #524d45 100%);
+  clip-path: polygon(0% 0%, 90% 0%, 65% 100%, 0% 100%);
+}
+
+.bottom-cloud-cushion {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cushion-puff {
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 6px rgba(148, 163, 184, 0.25), 0 4px 10px rgba(100, 116, 139, 0.15);
+  position: absolute;
+}
+.cushion-puff.puff-1 { width: 55px; height: 32px; left: 10px; }
+.cushion-puff.puff-2 { width: 68px; height: 38px; left: 36px; z-index: 2; }
+.cushion-puff.puff-3 { width: 50px; height: 30px; right: 10px; }
+
+/* 플랫폼 상단 표지판 */
 .zone-header {
   display: flex;
   align-items: center;
@@ -693,7 +904,7 @@ body.student-only-mode .nav-menu {
   border-radius: 99px;
   color: #fff;
   font-weight: 700;
-  margin: 4px auto 10px;
+  margin: 4px auto 8px;
   width: calc(100% - 12px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   z-index: 6;
@@ -704,7 +915,7 @@ body.student-only-mode .nav-menu {
 }
 
 .zone-center .zone-header {
-  background: linear-gradient(135deg, #475569, #64748b);
+  background: linear-gradient(135deg, #4d7c0f, #65a30d);
   justify-content: center;
   gap: 12px;
 }
@@ -736,10 +947,10 @@ body.student-only-mode .nav-menu {
   color: #1d4ed8;
 }
 
-/* 선택지 보기 단어 (큼직하고 선명함) */
+/* 선택지 보기 단어 */
 .zone-word {
   font-family: var(--font-sans);
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: -0.3px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -757,7 +968,7 @@ body.student-only-mode .nav-menu {
 .platform-floor {
   flex: 1;
   position: relative;
-  border-radius: 24px;
+  border-radius: 26px;
   overflow: hidden;
   min-height: 250px;
   transition: transform 0.25s ease;
@@ -766,7 +977,7 @@ body.student-only-mode .nav-menu {
 .platform-surface {
   position: absolute;
   inset: 0;
-  border-radius: 24px;
+  border-radius: 26px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -781,8 +992,44 @@ body.student-only-mode .nav-menu {
 }
 
 .zone-center .platform-surface {
-  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #faf8f5 60%, #f1f3f5 100%);
-  border: 1.5px solid #e2e8f0;
+  background: transparent;
+  border: none;
+}
+
+/* 부유섬 상단 잔디 대지 & 흙길 & 시냇물 */
+.island-ground {
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 25%, #e2f4be 0%, #cde897 55%, #b2d776 100%);
+  border: 2.5px solid #9dc75c;
+  box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.7),
+              inset 0 -6px 12px rgba(90, 130, 40, 0.25);
+}
+
+.island-path {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 36%;
+  width: 28%;
+  background: radial-gradient(ellipse at 50% 50%, #deb887 0%, #c49a6c 65%, #a87f52 100%);
+  opacity: 0.82;
+  border-radius: 40px;
+  transform: rotate(-3deg);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.island-stream {
+  position: absolute;
+  bottom: -4px;
+  left: 42%;
+  width: 26px;
+  height: 22px;
+  background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%);
+  border-radius: 8px 8px 14px 14px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 3px 6px rgba(14, 165, 233, 0.3);
 }
 
 .zone-b .platform-surface {
@@ -799,26 +1046,26 @@ body.student-only-mode .nav-menu {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .plaza-circle {
   width: 130px;
   height: 130px;
   border-radius: 50%;
-  border: 2px dashed #94a3b8;
+  border: 2px dashed #4d7c0f;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.6) 70%, transparent 100%);
-  box-shadow: inset 0 0 14px rgba(148, 163, 184, 0.15);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(240, 253, 244, 0.5) 70%, transparent 100%);
+  box-shadow: inset 0 0 14px rgba(77, 124, 15, 0.15);
 }
 
 .plaza-inner-circle {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid #65a30d;
 }
 
 .start-line {
@@ -827,17 +1074,18 @@ body.student-only-mode .nav-menu {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #64748b;
+  color: #3f6212;
   letter-spacing: 1px;
 }
 
 .line-dash {
   width: 24px;
-  height: 2px;
-  background: #cbd5e1;
-  border-radius: 1px;
+  height: 2.5px;
+  background: #65a30d;
+  border-radius: 2px;
+}
 }
 
 .line-text {
