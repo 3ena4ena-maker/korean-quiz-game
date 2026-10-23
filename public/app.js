@@ -1004,10 +1004,12 @@ function bindStageEvents() {
   });
 
   const soundBtn = document.getElementById('toggleSoundBtn');
-  soundBtn.addEventListener('click', () => {
-    sfx.enabled = !sfx.enabled;
-    soundBtn.textContent = sfx.enabled ? '🔊 효과음 ON' : '🔇 효과음 OFF';
-  });
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      sfx.enabled = !sfx.enabled;
+      soundBtn.textContent = sfx.enabled ? '효과음 켜기' : '효과음 끄기';
+    });
+  }
 
   document.getElementById('stageSetSelect').addEventListener('change', (e) => {
     clearHostTimers();
