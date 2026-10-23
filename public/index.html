@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>한글 폴가이즈! 🇰🇷 한국어 빈칸 서바이벌 퀴즈</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- 상단 네비게이션 바 (선생님 모드에서 표시, 학생 전용 전체화면 모드에서는 심플하게 표시) -->
+  <header class="topbar" id="mainTopbar">
+    <div class="brand">
+      <span class="brand-logo">🇰🇷</span>
+      <div>
+        <h1 class="brand-title">한글 징검다리 서바이벌</h1>
+        <p class="brand-sub">한국어교원 맞춤형 실시간 멀티플레이 빈칸 퀴즈</p>
+      </div>
+    </div>
+
+    <nav class="mode-tabs" id="modeTabs">
+      <button class="mode-tab active" data-tab="stage">
+        <span>🎮</span> 게임 스테이지 (교실 화면)
+      </button>
+      <button class="mode-tab" data-tab="editor">
+        <span>✏️</span> 수업 문장·문제 수정
+      </button>
+      <button class="mode-tab" data-tab="student-full">
+        <span>📱</span> 학생 접속 화면 보기
+      </button>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="btn-chip btn-phone-preview" id="toggleMiniPhoneBtn" title="화면 한쪽에서 학생용 스마트폰 리모컨을 같이 띄워놓고 직접 조작해봅니다">
+        📱 미니 학생폰 켜기
+      </button>
+      <button class="btn-chip btn-qr" id="openInviteModalBtn">
+        🔗 동시접속 초대 (QR)
+      </button>
+      <button class="btn-chip btn-sound" id="toggleSoundBtn" title="효과음 켜기/끄기">
+        🔊 효과음 ON
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       VIEW 1: 교실 메인 게임 스테이지 (선생님 & 프로젝터 공유 화면)
+       ========================================================= -->
+  <main class="view-section active" id="view-stage">
+    <!-- 상단 선생님 컨트롤 바 -->
+    <section class="teacher-control-bar">
+      <div class="control-left">
+        <div class="control-group">
+          <label for="stageSetSelect">📚 오늘의 수업 세트</label>
+          <select id="stageSetSelect" class="select-pill"></select>
+        </div>
+
+        <div class="control-group">
+          <label for="timeOverrideSelect">⏱️ 제한 시간</label>
+          <select id="timeOverrideSelect" class="select-pill">
+            <option value="">문제별 설정값 사용</option>
+            <option value="5">⚡ 전체 5초 고정</option>
+            <option value="10">⏳ 전체 10초 고정</option>
+          </select>
+        </div>
+
+        <div class="stats-pills">
+          <span class="stat-pill">👥 접속 인원 <strong id="totalPlayerCount">0</strong>명</span>
+          <span class="stat-pill stat-alive">🌟 생존 <strong id="alivePlayerCount">0</strong>명</span>
+        </div>
+      </div>
+
+      <div class="control-right">
+        <button class="btn btn-bot" id="addBotsBtn" title="가상의 외국인 학생 아바타 5명을 방에 입장시켜 바로 테스트합니다">
+          🤖 가상 학생 +5명
+        </button>
+        <button class="btn btn-outline-sm" id="clearBotsBtn" title="가상 학생 봇만 내보냅니다">
+          봇 비우기
+        </button>
+        <button class="btn btn-revive" id="reviveAllBtn" title="떨어진 학생들을 모두 다시 무대 위로 부활시킵니다">
+          ⚡ 전원 부활
+        </button>
+        <button class="btn btn-outline-sm" id="resetLobbyBtn">
+          🏠 대기실로
+        </button>
+      </div>
+    </section>
+
+    <!-- 메인 게임 아레나 -->
+    <div class="arena-wrapper">
+      <!-- 상단 전광판 (문제 & 카운트다운 타이머) -->
+      <div class="question-board" id="questionBoard">
+        <!-- 대기실 상태일 때 전광판 -->
+        <div class="board-lobby" id="boardLobby">
+          <div class="lobby-badge">실시간 동시접속 대기 중 · 방 번호 <strong id="lobbyRoomCode">1004</strong></div>
+          <h2 class="lobby-headline">귀여운 아바타들이 출발선에 모이고 있어요! 🐾</h2>
+          <p class="lobby-desc">
+            학생들은 스마트폰으로 접속하거나, 오른쪽 위 <strong>[🤖 가상 학생 +5명]</strong> 또는 <strong>[📱 미니 학생폰 켜기]</strong>를 눌러 바로 체험해 보세요!
+          </p>
+          <div class="lobby-start-actions">
+            <button class="btn btn-primary btn-giant" id="startGameBtn">
+              🚀 1번 문제 시작하기!
+            </button>
+            <button class="btn btn-secondary" id="openNewStudentWinBtn">
+              🪟 새 창으로 학생 동시접속 테스트
+            </button>
+          </div>
+        </div>
+
+        <!-- 문제 진행 중 / 정답 공개 상태일 때 전광판 -->
+        <div class="board-active hidden" id="boardActive">
+          <div class="board-meta">
+            <span class="q-badge" id="qNumberBadge">문제 1 / 5</span>
+            <span class="q-category" id="qCategoryBadge">조사</span>
+            <div class="timer-pill" id="timerPill">
+              <span class="timer-icon">⏰</span>
+              <span class="timer-num" id="timerNumber">5.0</span>초
+            </div>
+          </div>
+
+          <div class="timer-progress-track">
+            <div class="timer-progress-fill" id="timerProgressBar"></div>
+          </div>
+
+          <div class="sentence-box" id="sentenceBox">
+            <!-- 예: 오늘 날씨가 아주 추우니까 따뜻한 코트를 [  ?  ]. -->
+          </div>
+          <p class="sentence-translation" id="sentenceTranslation"></p>
+
+          <!-- 정답 해설 배너 (정답 공개 시 표시) -->
+          <div class="explanation-banner hidden" id="explanationBanner">
+            <span class="exp-tag">💡 선생님 핵심 해설</span>
+            <span id="explanationText"></span>
+          </div>
+
+          <!-- 문제 진행 컨트롤 버튼 (선생님용) -->
+          <div class="round-action-bar">
+            <button class="btn btn-warning" id="revealNowBtn">
+              🔔 지금 바로 정답 오픈!
+            </button>
+            <button class="btn btn-primary hidden" id="nextQuestionBtn">
+              ➡️ 다음 문제로 이동
+            </button>
+            <button class="btn btn-gold hidden" id="showWinnerBtn">
+              🏆 최종 생존자 우승 발표!
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D/2.5D 서바이벌 구름 위 스테이지 (A 구역 / 중앙 출발대 / B 구역) -->
+      <div class="stage-sky" id="stageSky">
+        <!-- 배경 구름 장식 -->
+        <div class="cloud cloud-1">☁️</div>
+        <div class="cloud cloud-2">☁️</div>
+        <div class="cloud cloud-3">☁️</div>
+        <div class="cloud cloud-4">☁️</div>
+
+        <!-- 단계 안내 토스트 배너 -->
+        <div class="stage-status-banner" id="stageStatusBanner">
+          대기실: 학생들이 모이면 시작하세요!
+        </div>
+
+        <!-- 3개 구역 발판 컨테이너 -->
+        <div class="platforms-container">
+          <!-- 왼쪽: A 선택 발판 -->
+          <div class="platform-zone zone-a" id="platformA">
+            <div class="zone-header">
+              <span class="zone-letter">A</span>
+              <span class="zone-word" id="zoneAWord">선택지 A</span>
+              <span class="zone-count" id="zoneACount">0명</span>
+            </div>
+            <div class="platform-floor" id="floorA">
+              <div class="trapdoor-left"></div>
+              <div class="trapdoor-right"></div>
+              <div class="platform-surface">
+                <div class="zone-signpost">A 구역</div>
+              </div>
+              <div class="abyss-pit">
+                <span>💨 퓨우우웅~!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 가운데: 출발 / 미선택 대기 광장 -->
+          <div class="platform-zone zone-center" id="platformCenter">
+            <div class="zone-header">
+              <span class="zone-letter">출발</span>
+              <span class="zone-word" id="zoneCenterWord">중앙 대기 광장</span>
+              <span class="zone-count" id="zoneCenterCount">0명</span>
+            </div>
+            <div class="platform-floor" id="floorCenter">
+              <div class="trapdoor-left"></div>
+              <div class="trapdoor-right"></div>
+              <div class="platform-surface">
+                <div class="bridge-arrow bridge-left">⬅️ A로 이동</div>
+                <div class="zone-signpost">출발선</div>
+                <div class="bridge-arrow bridge-right">B로 이동 ➡️</div>
+              </div>
+              <div class="abyss-pit">
+                <span>⏰ 시간 초과!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽: B 선택 발판 -->
+          <div class="platform-zone zone-b" id="platformB">
+            <div class="zone-header">
+              <span class="zone-letter">B</span>
+              <span class="zone-word" id="zoneBWord">선택지 B</span>
+              <span class="zone-count" id="zoneBCount">0명</span>
+            </div>
+            <div class="platform-floor" id="floorB">
+              <div class="trapdoor-left"></div>
+              <div class="trapdoor-right"></div>
+              <div class="platform-surface">
+                <div class="zone-signpost">B 구역</div>
+              </div>
+              <div class="abyss-pit">
+                <span>💨 퓨우우웅~!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 아바타들이 실제로 걸어다니고 서 있고 떨어지는 레이어 -->
+          <div class="avatars-layer" id="avatarsLayer"></div>
+        </div>
+
+        <!-- 탈락자 관람석 (구름 아래 구경꾼 바) -->
+        <div class="eliminated-bar" id="eliminatedBar">
+          <span class="elim-title">☁️ 구름 아래 탈락자 관람석 (<span id="eliminatedCount">0</span>명):</span>
+          <div class="elim-list" id="eliminatedList">
+            <span class="elim-empty">아직 탈락한 학생이 없어요!</span>
+          </div>
+        </div>
+
+        <!-- 🏆 최종 우승 세리머니 오버레이 -->
+        <div class="winner-overlay hidden" id="winnerOverlay">
+          <div class="confetti-container" id="confettiContainer"></div>
+          <div class="winner-card">
+            <div class="winner-crown-badge">👑 FINAL SURVIVORS 👑</div>
+            <h2 class="winner-title">축하합니다! 최후의 한국어 마스터!</h2>
+            <p class="winner-subtitle" id="winnerSubtitle">끝까지 살아남은 승리 아바타입니다!</p>
+
+            <div class="winner-podium" id="winnerPodium"></div>
+
+            <div class="winner-actions">
+              <button class="btn btn-primary btn-giant" id="playAgainBtn">
+                🔄 같은 멤버로 다시 게임하기
+              </button>
+              <button class="btn btn-secondary" id="winnerToEditorBtn">
+                ✏️ 수업 문장 수정하러 가기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       VIEW 2: 선생님용 수업 문장 & 문제 편집기
+       ========================================================= -->
+  <main class="view-section" id="view-editor">
+    <div class="editor-container">
+      <!-- 왼쪽: 수업 세트 목록 -->
+      <aside class="editor-sidebar">
+        <div class="sidebar-header">
+          <h3>📂 수업별 문제 세트</h3>
+          <button class="btn btn-primary btn-sm" id="addNewSetBtn">+ 새 수업 세트</button>
+        </div>
+        <p class="sidebar-help">수업 진도(1급, 2급, 어휘, 문법 등)에 따라 세트를 만들고 언제든 수정하세요.</p>
+        <ul class="set-list" id="editorSetList"></ul>
+
+        <div class="sidebar-footer">
+          <button class="btn btn-outline-sm btn-block" id="openBulkPasteModalBtn">
+            📋 텍스트로 한 번에 여러 문장 추가
+          </button>
+          <div class="backup-row">
+            <button class="btn btn-outline-sm" id="exportQuizzesBtn">💾 파일 저장</button>
+            <label class="btn btn-outline-sm file-label">
+              📂 불러오기
+              <input type="file" id="importQuizzesInput" accept=".json" hidden />
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 오른쪽: 선택된 세트의 문장 목록 및 편집 -->
+      <section class="editor-main">
+        <div class="editor-set-header">
+          <div class="set-title-inputs">
+            <input type="text" id="editSetTitle" class="input-set-title" placeholder="수업 세트 제목 (예: 초급 1급 - 조사 연습)" />
+            <input type="text" id="editSetDesc" class="input-set-desc" placeholder="수업 메모나 학습 목표를 적어두세요" />
+          </div>
+          <div class="set-header-actions">
+            <button class="btn btn-danger-outline btn-sm" id="deleteSetBtn">🗑️ 세트 삭제</button>
+            <button class="btn btn-primary" id="saveAllQuizzesBtn">💾 변경사항 저장 & 게임에 적용</button>
+          </div>
+        </div>
+
+        <div class="questions-toolbar">
+          <h4>📝 출제 문장 목록 (<span id="editorQuestionCount">0</span>문항)</h4>
+          <button class="btn btn-secondary" id="addQuestionBtn">+ 새 빈칸 문장 추가</button>
+        </div>
+
+        <div class="questions-editor-list" id="questionsEditorList"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       VIEW 3: 학생 접속 전용 전체화면 (학생 스마트폰/태블릿용)
+       ========================================================= -->
+  <main class="view-section" id="view-student-full">
+    <div class="student-screen-wrapper">
+      <div class="student-device-card" id="studentFullMount">
+        <!-- JS에서 학생 컨트롤러 UI가 렌더링됩니다 -->
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       플로팅 미니 학생 스마트폰 (선생님이 한 화면에서 같이 테스트용)
+       ========================================================= -->
+  <aside class="mini-phone-drawer" id="miniPhoneDrawer">
+    <div class="mini-phone-header">
+      <span>📱 내 학생 아바타 리모컨</span>
+      <button class="mini-phone-close" id="closeMiniPhoneBtn" title="닫기">✕</button>
+    </div>
+    <div class="mini-phone-body" id="studentMiniMount">
+      <!-- 동일한 학생 컨트롤러가 이곳에도 연동됩니다 -->
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       모달 1: 학생 동시접속 초대 (QR코드 & 주소 복사)
+       ========================================================= -->
+  <div class="modal-backdrop hidden" id="inviteModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📲 학생 실시간 동시접속 초대하기</h3>
+        <button class="modal-close" id="closeInviteModalBtn">✕</button>
+      </div>
+      <div class="modal-body invite-modal-body">
+        <div class="qr-box">
+          <img id="qrCodeImage" alt="학생 접속 QR코드" src="" />
+          <div class="room-code-pill">방 번호: <strong id="modalRoomCode">1004</strong></div>
+        </div>
+        <div class="invite-info">
+          <h4>1️⃣ 교실 와이파이(Wi-Fi)로 스마트폰 접속 시</h4>
+          <p>선생님 컴퓨터와 같은 와이파이에 연결된 학생들은 위 <strong>QR코드</strong>를 카메라로 찍거나 아래 주소로 접속하면 즉시 아바타가 나타납니다.</p>
+          <div class="url-copy-row">
+            <input type="text" id="studentLanUrlInput" readonly />
+            <button class="btn btn-primary btn-sm" id="copyLanUrlBtn">복사</button>
+          </div>
+
+          <h4>2️⃣ 한 컴퓨터에서 여러 창으로 동시 접속 테스트</h4>
+          <p>지금 바로 여러 명이 접속한 화면을 테스트하려면 아래 버튼을 눌러 학생 창을 여러 개 띄워보세요.</p>
+          <button class="btn btn-secondary" id="modalOpenStudentWinBtn">
+            🪟 새 학생 창 열기
+          </button>
+
+          <div class="invite-tip">
+            💡 <strong>외부(LTE/5G)에서도 접속하게 하려면?</strong><br/>
+            수업 중 와이파이 없이 학생 데이터로 접속하게 하려면 무료 배포 서비스(Render, Railway, Glitch)에 올리거나 터널링(ngrok/cloudflared)을 쓰면 전 세계 어디서나 접속됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       모달 2: 텍스트로 여러 문제 한 번에 붙여넣기
+       ========================================================= -->
+  <div class="modal-backdrop hidden" id="bulkPasteModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📋 여러 문장 한 번에 추가하기</h3>
+        <button class="modal-close" id="closeBulkPasteModalBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="bulk-help">
+          한 줄에 한 문제씩 <strong><code>문장 | 보기A | 보기B | 정답(A또는B) | 시간(5또는10)</code></strong> 형식으로 붙여넣으세요.<br/>
+          빈칸으로 만들 자리에 <strong><code>[ _____ ]</code></strong> 또는 <strong><code>___</code></strong>를 적어주시면 됩니다.
+        </p>
+        <textarea id="bulkPasteTextarea" rows="7" placeholder="오늘 날씨가 추우니까 코트를 [ _____ ]. | 입으세요 | 신으세요 | A | 5&#10;비가 많이 옵니다. [ _____ ] 우산을 썼습니다. | 그래서 | 그러나 | A | 5&#10;구두가 작아서 발이 [ _____ ]. | 고파요 | 아파요 | B | 5"></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-outline-sm" id="cancelBulkPasteBtn">취소</button>
+          <button class="btn btn-primary" id="confirmBulkPasteBtn">+ 문장 일괄 추가하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

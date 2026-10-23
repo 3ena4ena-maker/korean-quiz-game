@@ -1,0 +1,13 @@
+{
+  "name": "korean-quiz-game",
+  "version": "1.0.0",
+  "description": "한국어교원 맞춤형 실시간 동시접속 빈칸 서바이벌 퀴즈 웹앱",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  }
+}

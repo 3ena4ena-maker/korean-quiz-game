@@ -1,0 +1,191 @@
+{
+  "activeSetId": "set-1",
+  "sets": [
+    {
+      "id": "set-1",
+      "title": "🌱 초급 1급: 조사 & 기초 동사·형용사",
+      "description": "외국인 학습자가 가장 자주 헷갈리는 기본 조사(을/를, 에/에서)와 기초 용언 연습",
+      "questions": [
+        {
+          "id": "q101",
+          "category": "조사",
+          "sentence": "저는 매일 아침 맛있는 사과[ _____ ] 먹어요.",
+          "translation": "I eat a delicious apple every morning.",
+          "optionA": "를",
+          "optionB": "에",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "'먹다'의 목적어 앞에는 받침이 없을 때 조사 '를'을 씁니다."
+        },
+        {
+          "id": "q102",
+          "category": "조사",
+          "sentence": "지금 도서관[ _____ ] 한국어를 공부하고 있어요.",
+          "translation": "I am studying Korean at the library right now.",
+          "optionA": "에",
+          "optionB": "에서",
+          "answer": "B",
+          "timeLimit": 5,
+          "explanation": "행동(공부하다)이 이루어지는 장소 뒤에는 '에서'를 씁니다."
+        },
+        {
+          "id": "q103",
+          "category": "동사",
+          "sentence": "오늘 날씨가 아주 추우니까 따뜻한 코트를 [ _____ ].",
+          "translation": "It's very cold today, so please wear a warm coat.",
+          "optionA": "입으세요",
+          "optionB": "신으세요",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "옷(코트, 바지, 치마)은 '입다', 신발이나 양말은 '신다'를 씁니다."
+        },
+        {
+          "id": "q104",
+          "category": "형용사",
+          "sentence": "새로 산 구두가 너무 작아서 발이 [ _____ ].",
+          "translation": "My feet hurt because the new shoes are too small.",
+          "optionA": "고파요",
+          "optionB": "아파요",
+          "answer": "B",
+          "timeLimit": 5,
+          "explanation": "몸에 통증이 있을 때는 '아프다(아파요)'를 사용합니다."
+        },
+        {
+          "id": "q105",
+          "category": "조사",
+          "sentence": "이번 주말에 친구[ _____ ] 같이 영화관에 갈 거예요.",
+          "translation": "I am going to the movie theater together with my friend this weekend.",
+          "optionA": "하고",
+          "optionB": "마다",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "'~와/과 함께'의 의미로 구어체에서는 '하고'를 자주 씁니다."
+        }
+      ]
+    },
+    {
+      "id": "set-2",
+      "title": "🌿 초급 2급: 접속사 & 연결어미 연습",
+      "description": "문장과 문장을 자연스럽게 이어주는 접속부사(그래서, 그러나)와 연결어미 복습",
+      "questions": [
+        {
+          "id": "q201",
+          "category": "접속사",
+          "sentence": "밖에서 비가 많이 옵니다. [ _____ ] 우산을 썼습니다.",
+          "translation": "It is raining a lot outside. So I used an umbrella.",
+          "optionA": "그래서",
+          "optionB": "그러나",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "앞 문장이 원인이 되고 뒤 문장이 결과일 때는 '그래서'를 씁니다."
+        },
+        {
+          "id": "q202",
+          "category": "접속사",
+          "sentence": "떡볶이는 조금 맵습니다. [ _____ ] 아주 맛있습니다.",
+          "translation": "Tteokbokki is a little spicy. However, it is very delicious.",
+          "optionA": "그러니까",
+          "optionB": "그렇지만",
+          "answer": "B",
+          "timeLimit": 5,
+          "explanation": "앞의 내용과 반대되는 내용이 뒤에 올 때는 '그렇지만/그러나'를 씁니다."
+        },
+        {
+          "id": "q203",
+          "category": "연결어미",
+          "sentence": "아침부터 배가 너무 [ _____ ] 밥을 두 그릇이나 먹었어요.",
+          "translation": "Because I was so hungry since morning, I ate two bowls of rice.",
+          "optionA": "고파서",
+          "optionB": "고프지만",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'배가 고프다'에 이유를 나타내는 '-아서/어서'가 결합하면 '고파서'가 됩니다."
+        },
+        {
+          "id": "q204",
+          "category": "연결어미",
+          "sentence": "내일 한국어 시험이 [ _____ ] 오늘 밤에 열심히 공부해야 해요.",
+          "translation": "Since there is a Korean exam tomorrow, I have to study hard tonight.",
+          "optionA": "있으니까",
+          "optionB": "있느라고",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "뒤에 명령이나 의무('~해야 해요')가 올 때는 이유 연결어미 '-(으)니까'를 씁니다."
+        },
+        {
+          "id": "q205",
+          "category": "어미",
+          "sentence": "퇴근 시간이라 길이 많이 막히니까 지하철을 [ _____ ].",
+          "translation": "Since the road is very congested during rush hour, let's take the subway.",
+          "optionA": "탑시다",
+          "optionB": "탔습니다",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "상대방에게 함께 하자고 제안(청유)할 때는 '-(으)ㅂ시다(탑시다)'를 씁니다."
+        }
+      ]
+    },
+    {
+      "id": "set-3",
+      "title": "🌳 중급 3급: 부사 & 헷갈리는 형용사·동사",
+      "description": "중급 학습자들이 자주 틀리는 정도부사, 시간부사, 유사 어휘 구별하기",
+      "questions": [
+        {
+          "id": "q301",
+          "category": "부사",
+          "sentence": "시험 결과가 생각보다 잘 나와서 기분이 [ _____ ] 좋았어요.",
+          "translation": "The test result came out better than expected, so I felt very good.",
+          "optionA": "무척",
+          "optionB": "별로",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "'무척'은 긍정문에서 '매우/아주'의 뜻으로 쓰이고, '별로'는 부정문(별로 안 좋다)과 함께 쓰입니다."
+        },
+        {
+          "id": "q302",
+          "category": "부사",
+          "sentence": "비행기 시간에 늦지 않도록 공항에 [ _____ ] 도착하세요.",
+          "translation": "Please arrive at the airport in advance so you won't be late for your flight.",
+          "optionA": "벌써",
+          "optionB": "미리",
+          "answer": "B",
+          "timeLimit": 5,
+          "explanation": "어떤 일이 일어나기 전에 먼저 준비할 때는 '미리'를 씁니다."
+        },
+        {
+          "id": "q303",
+          "category": "형용사",
+          "sentence": "전주는 비빔밥이 맛있기로 [ _____ ] 도시예요.",
+          "translation": "Jeonju is a city famous for its delicious bibimbap.",
+          "optionA": "유명한",
+          "optionB": "유행한",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "이름이 널리 알려져 있다는 뜻은 '유명하다(유명한)'입니다."
+        },
+        {
+          "id": "q304",
+          "category": "동사",
+          "sentence": "약속 시간을 갑자기 [ _____ ] 정말 미안해요.",
+          "translation": "I'm really sorry for suddenly changing the appointment time.",
+          "optionA": "고쳐서",
+          "optionB": "바꿔서",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "시간이나 일정을 다른 것으로 변경할 때는 '바꾸다(바꿔서)'를 씁니다."
+        },
+        {
+          "id": "q305",
+          "category": "형용사",
+          "sentence": "외국어를 배울 때는 매일 조금씩 연습하는 습관이 가장 [ _____ ].",
+          "translation": "When learning a foreign language, the habit of practicing a little every day is the most important.",
+          "optionA": "중요합니다",
+          "optionB": "위험합니다",
+          "answer": "A",
+          "timeLimit": 5,
+          "explanation": "가치가 크고 꼭 필요하다는 의미의 형용사는 '중요하다(중요합니다)'입니다."
+        }
+      ]
+    }
+  ]
+}
