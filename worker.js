@@ -1,9 +1,28 @@
-// Cloudflare Durable Object Realtime Room Relay & Authoritative State Server
+// Cloudflare Durable Object Realtime Room Relay & Authoritative Judge Server
+const KNOWN_ANSWERS = {
+  q101: 'A',
+  q102: 'B',
+  q103: 'A',
+  q104: 'B',
+  q105: 'A',
+  q201: 'A',
+  q202: 'B',
+  q203: 'A',
+  q204: 'A',
+  q205: 'A',
+  q301: 'A',
+  q302: 'B',
+  q303: 'A',
+  q304: 'B',
+  q305: 'A'
+};
+
 export class QuizRoom {
   constructor(ctx, env) {
     this.ctx = ctx;
     this.env = env;
     this.sessions = new Set();
+    this.customAnswersMap = {}; // questionId -> 'A' | 'B'
     this.roomState = {
       roomCode: '1004',
       phase: 'LOBBY',
@@ -19,6 +38,27 @@ export class QuizRoom {
       lastEliminatedIds: [],
       updatedAt: Date.now()
     };
+  }
+
+  resolveCorrectAnswer(questionObj) {
+    if (!questionObj) return 'A';
+    const rawAns = String(questionObj.answer || '').toUpperCase().trim();
+    if (rawAns === 'A' || rawAns === 'B') {
+      if (questionObj.id) this.customAnswersMap[questionObj.id] = rawAns;
+      return rawAns;
+    }
+    if (questionObj.id && this.customAnswersMap[questionObj.id]) {
+      return this.customAnswersMap[questionObj.id];
+    }
+    if (questionObj.id && KNOWN_ANSWERS[questionObj.id]) {
+      return KNOWN_ANSWERS[questionObj.id];
+    }
+    const prevQ = this.roomState.currentQuestion;
+    if (prevQ && prevQ.id === questionObj.id) {
+      const prevAns = String(prevQ.answer || '').toUpperCase().trim();
+      if (prevAns === 'A' || prevAns === 'B') return prevAns;
+    }
+    return 'A';
   }
 
   getPublicState() {
@@ -58,6 +98,30 @@ export class QuizRoom {
 
     if (msg.type === 'host:sync-state' && msg.state) {
       const incoming = msg.state;
+      const nextPhase = incoming.phase || this.roomState.phase;
+
+      // Detect if a brand new question or lobby reset started
+      const prevQId = this.roomState.currentQuestion ? this.roomState.currentQuestion.id : null;
+      const nextQId = incoming.currentQuestion ? incoming.currentQuestion.id : null;
+      const isNewRoundStart =
+        Boolean(msg.resetChoices) ||
+        (this.roomState.phase !== 'QUESTION' && nextPhase === 'QUESTION') ||
+        (nextPhase === 'QUESTION' && prevQId !== nextQId);
+
+      // Ensure currentQuestion ALWAYS has a valid 'A' or 'B' answer (never null!)
+      let fixedQuestion = incoming.currentQuestion !== undefined
+        ? incoming.currentQuestion
+        : this.roomState.currentQuestion;
+
+      let authoritativeAnswer = 'A';
+      if (fixedQuestion) {
+        authoritativeAnswer = this.resolveCorrectAnswer(fixedQuestion);
+        fixedQuestion = {
+          ...fixedQuestion,
+          answer: authoritativeAnswer
+        };
+      }
+
       const mergedPlayers = {};
 
       // 1. Preserve all real (non-bot) students already connected to the cloud room
@@ -76,12 +140,16 @@ export class QuizRoom {
               mergedPlayers[p.id] = p;
             }
           } else if (mergedPlayers[p.id]) {
+            const existingChoice = mergedPlayers[p.id].choice;
+            const incomingChoice = p.choice;
             mergedPlayers[p.id] = {
               ...mergedPlayers[p.id],
-              alive: msg.reviveAll ? true : (p.alive !== undefined ? p.alive : mergedPlayers[p.id].alive),
-              falling: p.falling,
-              score: p.score !== undefined ? p.score : mergedPlayers[p.id].score,
-              choice: msg.resetChoices ? 'CENTER' : (mergedPlayers[p.id].choice || p.choice)
+              alive: (msg.reviveAll || isNewRoundStart) ? true : mergedPlayers[p.id].alive,
+              falling: isNewRoundStart ? false : mergedPlayers[p.id].falling,
+              score: Math.max(mergedPlayers[p.id].score || 0, p.score || 0),
+              choice: isNewRoundStart
+                ? 'CENTER'
+                : ((existingChoice === 'A' || existingChoice === 'B') ? existingChoice : (incomingChoice || 'CENTER'))
             };
           } else {
             mergedPlayers[p.id] = p;
@@ -89,29 +157,64 @@ export class QuizRoom {
         }
       }
 
-      if (msg.resetChoices) {
+      if (isNewRoundStart || msg.resetChoices) {
         for (const p of Object.values(mergedPlayers)) {
           p.choice = 'CENTER';
           p.falling = false;
-          if (msg.reviveAll) p.alive = true;
+          p.alive = true;
           if (msg.resetScores) p.score = 0;
+        }
+      }
+
+      // 3. AUTHORITATIVE JUDGE: During REVEAL or DROP, enforce accurate survival based on authoritativeAnswer!
+      const authoritativeEliminated = [];
+      if ((nextPhase === 'REVEAL' || nextPhase === 'DROP') && fixedQuestion) {
+        for (const p of Object.values(mergedPlayers)) {
+          const pChoice = String(p.choice || '').toUpperCase().trim();
+          if (pChoice === authoritativeAnswer) {
+            // Player picked the RIGHT answer -> MUST SURVIVE!
+            p.alive = true;
+            p.falling = false;
+            if (this.roomState.phase === 'QUESTION' && nextPhase === 'REVEAL') {
+              p.score = (p.score || 0) + 1;
+            }
+          } else {
+            // Player picked the WRONG answer (or stayed in CENTER) -> ELIMINATED!
+            authoritativeEliminated.push(p.id);
+            if (nextPhase === 'REVEAL') {
+              p.falling = true;
+            } else if (nextPhase === 'DROP') {
+              // If host already finished drop animation, mark alive=false
+              const hostVersion = Array.isArray(incoming.players)
+                ? incoming.players.find(hp => hp && hp.id === p.id)
+                : null;
+              if (hostVersion && hostVersion.alive === false && hostVersion.falling === false) {
+                p.alive = false;
+                p.falling = false;
+              } else {
+                p.falling = true;
+              }
+            }
+          }
         }
       }
 
       this.roomState = {
         ...this.roomState,
         roomCode: incoming.roomCode || this.roomState.roomCode,
-        phase: incoming.phase || this.roomState.phase,
+        phase: nextPhase,
         activeSetId: incoming.activeSetId || this.roomState.activeSetId,
         activeSetTitle: incoming.activeSetTitle || this.roomState.activeSetTitle,
         questionIndex: typeof incoming.questionIndex === 'number' ? incoming.questionIndex : this.roomState.questionIndex,
         totalQuestions: typeof incoming.totalQuestions === 'number' ? incoming.totalQuestions : this.roomState.totalQuestions,
-        currentQuestion: incoming.currentQuestion !== undefined ? incoming.currentQuestion : this.roomState.currentQuestion,
+        currentQuestion: fixedQuestion,
         timeLimit: incoming.timeLimit || this.roomState.timeLimit,
         timeRemaining: incoming.timeRemaining !== undefined ? incoming.timeRemaining : this.roomState.timeRemaining,
         overrideTimeLimit: incoming.overrideTimeLimit !== undefined ? incoming.overrideTimeLimit : this.roomState.overrideTimeLimit,
         players: mergedPlayers,
-        lastEliminatedIds: incoming.lastEliminatedIds || [],
+        lastEliminatedIds: (nextPhase === 'REVEAL' || nextPhase === 'DROP')
+          ? authoritativeEliminated
+          : (incoming.lastEliminatedIds || []),
         updatedAt: Date.now()
       };
 
@@ -154,7 +257,8 @@ export class QuizRoom {
 
     if (msg.type === 'student:choose') {
       const { playerId, choice } = msg.payload || {};
-      if (choice === 'A' || choice === 'B') {
+      const cleanChoice = String(choice || '').toUpperCase().trim();
+      if (cleanChoice === 'A' || cleanChoice === 'B') {
         let player = this.roomState.players[playerId];
         if (!player) {
           player = {
@@ -171,7 +275,7 @@ export class QuizRoom {
           };
           this.roomState.players[playerId] = player;
         }
-        player.choice = choice;
+        player.choice = cleanChoice;
         this.roomState.updatedAt = Date.now();
         this.forwardToAll({ type: 'relay:student-action', action: msg });
         this.broadcast();

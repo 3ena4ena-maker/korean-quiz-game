@@ -317,11 +317,30 @@ function getStudentInviteUrl(code) {
 }
 
 function loadQuizDatabaseFromStorage() {
+  const defaultMap = {};
+  DEFAULT_QUIZ_DATABASE.sets.forEach(s => {
+    s.questions.forEach(q => {
+      defaultMap[q.id] = q.answer;
+    });
+  });
+
   const saved = localStorage.getItem('kor_quiz_custom_db_v1');
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed.sets) && parsed.sets.length > 0) {
+        parsed.sets.forEach(s => {
+          if (Array.isArray(s.questions)) {
+            s.questions.forEach(q => {
+              const clean = String(q.answer || '').toUpperCase().trim();
+              if (clean !== 'A' && clean !== 'B') {
+                q.answer = defaultMap[q.id] || 'A';
+              } else {
+                q.answer = clean;
+              }
+            });
+          }
+        });
         return parsed;
       }
     } catch (_) {}
@@ -780,13 +799,18 @@ function hostScheduleBotMoves() {
   });
 }
 
-function hostTriggerRevealAndDrop() {
+async function hostTriggerRevealAndDrop() {
   clearHostTimers();
+  // 정답 판정 직전에 클라우드 서버에서 학생들의 최신 선택(A/B)을 한번 더 동기화
+  await pullCloudRoomState();
+
   const activeSet = getActiveQuizSet();
   const rawQ = (activeSet && activeSet.questions[gameState.questionIndex]) || gameState.currentQuestion;
   if (!rawQ) return;
 
-  const answer = String(rawQ.answer || (gameState.currentQuestion && gameState.currentQuestion.answer) || 'A').toUpperCase().trim();
+  const rawAns = String(rawQ.answer || (gameState.currentQuestion && gameState.currentQuestion.answer) || '').toUpperCase().trim();
+  const answer = (rawAns === 'A' || rawAns === 'B') ? rawAns : 'A';
+
   gameState.phase = 'REVEAL';
   if (gameState.currentQuestion) {
     gameState.currentQuestion.answer = answer;
@@ -800,6 +824,7 @@ function hostTriggerRevealAndDrop() {
     if (pChoice === answer) {
       p.score = (p.score || 0) + 1;
       p.falling = false;
+      p.alive = true;
     } else {
       p.falling = true;
       eliminated.push(p.id);
@@ -811,13 +836,25 @@ function hostTriggerRevealAndDrop() {
 
   const dropTimeout = setTimeout(() => {
     gameState.phase = 'DROP';
+    // DROP 시점에도 정답자는 절대 떨어지지 않도록 재확인
+    Object.values(hostPlayersMap).forEach(p => {
+      const pChoice = String(p.choice || '').toUpperCase().trim();
+      if (pChoice === answer) {
+        p.falling = false;
+        p.alive = true;
+      }
+    });
     broadcastHostState();
 
     const finishDropTimeout = setTimeout(() => {
-      eliminated.forEach(id => {
-        if (hostPlayersMap[id]) {
-          hostPlayersMap[id].alive = false;
-          hostPlayersMap[id].falling = false;
+      Object.values(hostPlayersMap).forEach(p => {
+        const pChoice = String(p.choice || '').toUpperCase().trim();
+        if (pChoice === answer) {
+          p.alive = true;
+          p.falling = false;
+        } else {
+          p.alive = false;
+          p.falling = false;
         }
       });
       broadcastHostState();
