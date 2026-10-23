@@ -15,7 +15,13 @@ const PORT = process.env.PORT || 3400;
 const DATA_FILE = path.join(__dirname, 'data', 'quizzes.json');
 
 app.use(express.json({ limit: '5mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 
 // Helper: Find local LAN IPv4 address so smartphones on same Wi-Fi can connect
 function getLocalIpAddress() {
@@ -67,8 +73,8 @@ app.get('/api/server-info', (req, res) => {
     ip,
     port: PORT,
     roomCode: gameState.roomCode,
-    lanUrl: `http://${ip}:${PORT}`,
-    studentLanUrl: `http://${ip}:${PORT}/?role=student&room=${gameState.roomCode}`
+    lanUrl: `https://korean-quiz-game.pages.dev`,
+    studentLanUrl: `https://korean-quiz-game.pages.dev/?role=student&room=${gameState.roomCode}`
   });
 });
 

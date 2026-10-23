@@ -175,6 +175,41 @@ function renderCreatureThumb(key) {
   `;
 }
 
+function renderLargeCreaturePreview(key, name, country, emoteText = '') {
+  const av = getAvatarInfo(key);
+  return `
+    <div class="st-creature-stage">
+      <div class="st-creature-actor">
+        ${emoteText ? `<div class="avatar-bubble">${escapeHtml(emoteText)}</div>` : ''}
+        <div class="avatar-nametag">
+          <span class="av-flag">${escapeHtml(country || '🇰🇷')}</span>
+          <span class="av-name">${escapeHtml(name || '학생')}</span>
+        </div>
+        <div class="avatar-creature st-large-creature" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
+          <div class="creature-body">
+            <div class="creature-shine"></div>
+            <div class="creature-face">
+              <div class="creature-eye left"></div>
+              <div class="creature-eye right"></div>
+              <div class="creature-blush left"></div>
+              <div class="creature-blush right"></div>
+              <div class="creature-mouth"></div>
+            </div>
+            <div class="creature-arm left"></div>
+            <div class="creature-arm right"></div>
+          </div>
+          <div class="creature-legs">
+            <div class="creature-leg left"></div>
+            <div class="creature-leg right"></div>
+          </div>
+        </div>
+        <div class="avatar-shadow"></div>
+      </div>
+      <div class="st-mini-island-pad"></div>
+    </div>
+  `;
+}
+
 const DEFAULT_QUIZ_DATABASE = {
   activeSetId: 'set-1',
   sets: [
@@ -443,14 +478,29 @@ const roomCodeParam = urlParams.get('room') || '1004';
 let quizDatabase = loadQuizDatabaseFromStorage();
 let editingSetId = quizDatabase.activeSetId || quizDatabase.sets[0].id;
 
+const PUBLIC_APP_URL = 'https://korean-quiz-game.pages.dev';
+
 let serverInfo = {
   roomCode: roomCodeParam,
   studentLanUrl: getStudentInviteUrl(roomCodeParam)
 };
 
 function getStudentInviteUrl(code) {
+  const cleanCode = encodeURIComponent(code || '1004');
+  const host = window.location.hostname || '';
+  const isLocalOrPrivate =
+    !host ||
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.startsWith('10.') ||
+    host.startsWith('192.168.') ||
+    host.startsWith('172.');
+
+  if (isLocalOrPrivate) {
+    return `${PUBLIC_APP_URL}/?role=student&room=${cleanCode}`;
+  }
   const base = window.location.origin + window.location.pathname;
-  return `${base}?role=student&room=${encodeURIComponent(code)}`;
+  return `${base}?role=student&room=${cleanCode}`;
 }
 
 function loadQuizDatabaseFromStorage() {
@@ -641,42 +691,47 @@ async function pullCloudRoomState() {
   } catch (_) {}
 }
 
+let botsClearedAt = 0;
+
 function mergeRealStudentsFromCloud(cloudState) {
   if (!cloudState || !Array.isArray(cloudState.players)) return;
   let changed = false;
+  const allowBotMerge = (Date.now() - botsClearedAt) > 4000;
 
   cloudState.players.forEach((cp) => {
-    if (!cp || !cp.id || cp.isBot) return;
+    if (!cp || !cp.id) return;
+    if (cp.isBot && !allowBotMerge) return;
+
+    const cleanAvatar = AVATAR_CATALOG[cp.avatar] ? cp.avatar : 'coral_peach';
     const existing = hostPlayersMap[cp.id];
     if (!existing) {
       hostPlayersMap[cp.id] = {
         id: cp.id,
-        name: cp.name,
-        avatar: cp.avatar,
-        country: cp.country,
+        name: cp.name || '학생',
+        avatar: cleanAvatar,
+        country: cp.country || '🌏',
         choice: cp.choice || 'CENTER',
         alive: cp.alive !== undefined ? cp.alive : true,
         falling: false,
         score: cp.score || 0,
-        isBot: false,
+        isBot: Boolean(cp.isBot),
         emote: cp.emote || null
       };
       changed = true;
-    } else {
+    } else if (!existing.isBot) {
       if (
         existing.name !== cp.name ||
-        existing.avatar !== cp.avatar ||
+        existing.avatar !== cleanAvatar ||
         existing.country !== cp.country ||
         existing.emote !== cp.emote ||
         (cp.choice !== existing.choice && (cp.choice === 'A' || cp.choice === 'B'))
       ) {
-        existing.name = cp.name;
-        existing.avatar = cp.avatar;
-        existing.country = cp.country;
+        existing.name = cp.name || existing.name;
+        existing.avatar = cleanAvatar;
+        existing.country = cp.country || existing.country;
         existing.emote = cp.emote;
         if (cp.choice === 'A' || cp.choice === 'B') {
           existing.choice = cp.choice;
-          // REVEAL 상태에서 도착했더라도 정답이면 탈락 취소
           if (gameState.phase === 'REVEAL' && gameState.currentQuestion) {
             if (existing.choice === gameState.currentQuestion.answer) {
               existing.falling = false;
@@ -825,7 +880,7 @@ function buildPublicState() {
   const totalQuestions = activeSet ? activeSet.questions.length : 0;
   let fullQuestion = null;
 
-  const src = gameState.currentQuestion || rawQ;
+  const src = gameState.phase === 'LOBBY' ? null : (gameState.currentQuestion || rawQ);
   if (src) {
     fullQuestion = {
       id: src.id,
@@ -874,8 +929,16 @@ function broadcastHostState(options = {}) {
       clearBotsOnly: Boolean(options.clearBotsOnly)
     };
     if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
-      cloudWs.send(JSON.stringify(syncPayload));
-    } else {
+      try { cloudWs.send(JSON.stringify(syncPayload)); } catch (_) {}
+    }
+    if (
+      !cloudWs ||
+      cloudWs.readyState !== WebSocket.OPEN ||
+      options.forceHttp ||
+      options.resetChoices ||
+      options.reviveAll ||
+      options.clearBotsOnly
+    ) {
       fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1037,7 +1100,7 @@ function hostAddBots(count = 1) {
   if (gameState.phase === 'QUESTION') {
     hostScheduleBotMoves();
   }
-  broadcastHostState();
+  broadcastHostState({ forceHttp: true });
 }
 
 // =========================================================================
@@ -1049,15 +1112,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchView('student-full');
   }
 
-  try {
-    const res = await fetch('./api/server-info');
-    if (res.ok) {
-      const info = await res.json();
-      if (info && info.studentLanUrl && location.hostname === 'localhost') {
-        serverInfo.studentLanUrl = info.studentLanUrl;
-      }
-    }
-  } catch (_) {}
+  serverInfo.studentLanUrl = getStudentInviteUrl(gameState.roomCode);
 
   updateInviteModalUI();
   renderStageSetDropdown();
@@ -1123,10 +1178,11 @@ function switchView(tabName) {
   if (vStudent) vStudent.classList.toggle('active', tabName === 'student-full');
 
   if (tabName === 'student-full') {
-    isStudentJoined = true;
-    sessionStorage.setItem('kor_quiz_joined_session', '1');
     const mount = document.getElementById('studentFullMount');
     if (mount) mount.dataset.lastQKey = '';
+    if (isStudentJoined) {
+      postStudentJoinToCloud();
+    }
     renderStudentControllers();
   }
 }
@@ -1209,18 +1265,19 @@ function bindStageEvents() {
   const clearBotsBtn = document.getElementById('clearBotsBtn');
   if (clearBotsBtn) {
     clearBotsBtn.addEventListener('click', () => {
+      botsClearedAt = Date.now();
       for (const id of Object.keys(hostPlayersMap)) {
         if (hostPlayersMap[id].isBot) delete hostPlayersMap[id];
       }
       if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
-        cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' }));
+        try { cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' })); } catch (_) {}
       }
       fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'teacher:clear-bots' })
       }).catch(() => {});
-      broadcastHostState({ clearBotsOnly: true });
+      broadcastHostState({ clearBotsOnly: true, forceHttp: true });
       showToast('가상 학생 봇을 모두 내보냈습니다.');
     });
   }
@@ -1228,6 +1285,11 @@ function bindStageEvents() {
   const gatherBtn = document.getElementById('gatherCenterBtn') || document.getElementById('reviveAllBtn');
   if (gatherBtn) {
     gatherBtn.addEventListener('click', () => {
+      clearHostTimers();
+      if (gameState.phase === 'REVEAL' || gameState.phase === 'DROP' || gameState.phase === 'WINNER') {
+        gameState.phase = 'LOBBY';
+        gameState.currentQuestion = null;
+      }
       Object.values(hostPlayersMap).forEach(p => {
         p.choice = 'CENTER';
         p.alive = true;
@@ -1235,7 +1297,7 @@ function bindStageEvents() {
         p.emote = null;
       });
       gameState.lastEliminatedIds = [];
-      broadcastHostState({ resetChoices: true, reviveAll: true });
+      broadcastHostState({ resetChoices: true, reviveAll: true, forceHttp: true });
       showToast('모든 학생을 중앙 대기 광장으로 모았습니다.');
     });
   }
@@ -1331,6 +1393,14 @@ function bindStageEvents() {
     });
   }
 
+  const stViewEditBtn = document.getElementById('studentViewEditProfileBtn');
+  if (stViewEditBtn) {
+    stViewEditBtn.addEventListener('click', () => {
+      isEditingStudentProfile = true;
+      renderStudentControllers();
+    });
+  }
+
   const stViewNewWinBtn = document.getElementById('studentViewNewWinBtn');
   if (stViewNewWinBtn) stViewNewWinBtn.addEventListener('click', openNewStudentWindow);
 
@@ -1339,8 +1409,9 @@ function bindStageEvents() {
 }
 
 function openNewStudentWindow() {
-  const url = getStudentInviteUrl(gameState.roomCode);
-  window.open(url, '_blank', 'width=430,height=740');
+  const base = window.location.origin + window.location.pathname;
+  const url = `${base}?role=student&room=${encodeURIComponent(gameState.roomCode || '1004')}`;
+  window.open(url, '_blank', 'width=440,height=780');
 }
 
 // =========================================================================
@@ -1531,24 +1602,24 @@ function renderAvatarsOnStage() {
 }
 
 function computeAvatarPosition(zoneKey, index, totalInZone) {
-  let minX = 41, maxX = 59;
-  if (zoneKey === 'A') { minX = 8; maxX = 30; }
-  if (zoneKey === 'B') { minX = 70; maxX = 92; }
+  let minX = 37, maxX = 63;
+  let cols = 4;
+  if (zoneKey === 'A') { minX = 6; maxX = 27; cols = 3; }
+  if (zoneKey === 'B') { minX = 73; maxX = 94; cols = 3; }
 
-  const cols = 3;
   const row = Math.floor(index / cols);
   const col = index % cols;
   const itemsInThisRow = Math.min(cols, totalInZone - row * cols);
 
   const spanX = maxX - minX;
-  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow + 0.3) : 0;
+  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow + 0.25) : 0;
   const centerX = (minX + maxX) / 2;
   const offsetX = itemsInThisRow > 1
     ? (col - (itemsInThisRow - 1) / 2) * stepX
     : 0;
 
   const xPct = centerX + offsetX;
-  const yPct = Math.min(84, 58 + row * 12);
+  const yPct = Math.min(82, 42 + row * 18);
 
   return { xPct, yPct };
 }
@@ -1704,23 +1775,28 @@ function renderStudentControllers() {
     document.getElementById('studentMiniMount')
   ];
 
-  const meOnServer = Array.isArray(gameState.players) ? gameState.players.find(p => p.id === myStudentProfile.playerId) : Object.values(gameState.players || {}).find(p => p.id === myStudentProfile.playerId);
+  const playersArr = Array.isArray(gameState.players)
+    ? gameState.players
+    : Object.values(gameState.players || {});
+  const meOnServer = playersArr.find(p => p && p.id === myStudentProfile.playerId);
   const av = getAvatarInfo(myStudentProfile.avatar);
   const q = gameState.currentQuestion;
 
   mounts.forEach((mount) => {
     if (!mount) return;
 
-    // 1. 프로필 설정 모드
+    // 1. 프로필 설정 모드 (아바타 15종 선택 및 대형 3D 미리보기)
     if (!isStudentJoined || isEditingStudentProfile) {
       currentRenderedQId = null;
+      mount.dataset.lastQKey = '';
       mount.innerHTML = `
         <div class="st-box">
-          <h3 style="text-align:center; font-family:var(--font-display); font-size:1.3rem;">
-            🐾 내 귀여운 아바타 만들기
+          <h3 style="text-align:center; font-family:var(--font-display); font-size:1.35rem; color:#1e1b4b;">
+            🐾 내 귀여운 3D 아바타 만들기
           </h3>
+          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name, myStudentProfile.country, '만나서 반가워요! 👋')}
           <div class="field-group">
-            <label>이름 (외국인 학생 이름/별명)</label>
+            <label>이름 (학생 이름 / 별명)</label>
             <input type="text" class="field-input st-name-input" value="${escapeHtml(myStudentProfile.name)}" maxlength="12" placeholder="이름을 입력하세요" />
           </div>
           <div class="field-group">
@@ -1734,7 +1810,7 @@ function renderStudentControllers() {
             </div>
           </div>
           <div class="field-group">
-            <label>캐릭터 선택 (15가지 귀여운 젤리 친구)</label>
+            <label>캐릭터 선택 (15가지 귀여운 점토 생명체)</label>
             <div class="avatar-grid">
               ${Object.entries(AVATAR_CATALOG).map(([key, info]) => `
                 <button type="button" class="avatar-pick-btn ${myStudentProfile.avatar === key ? 'selected' : ''}" data-avatar="${key}">
@@ -1744,14 +1820,26 @@ function renderStudentControllers() {
               `).join('')}
             </div>
           </div>
-          <button type="button" class="btn btn-primary btn-block st-save-join-btn" style="padding:12px;">
-            🚀 이 아바타로 게임 입장하기!
+          <button type="button" class="btn btn-primary btn-block st-save-join-btn" style="padding:13px; font-size:1rem;">
+            🚀 이 아바타로 광장 입장하기!
           </button>
         </div>
       `;
 
+      const nameInput = mount.querySelector('.st-name-input');
+      if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+          myStudentProfile.name = e.target.value.trim() || '학생';
+          saveMyStudentProfile();
+          const nameTagEl = mount.querySelector('.st-creature-stage .av-name');
+          if (nameTagEl) nameTagEl.textContent = myStudentProfile.name;
+        });
+      }
+
       mount.querySelectorAll('.st-flag-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+          const inputEl = mount.querySelector('.st-name-input');
+          if (inputEl && inputEl.value.trim()) myStudentProfile.name = inputEl.value.trim();
           myStudentProfile.country = btn.dataset.flag;
           saveMyStudentProfile();
           postStudentJoinToCloud();
@@ -1761,6 +1849,8 @@ function renderStudentControllers() {
 
       mount.querySelectorAll('.avatar-pick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+          const inputEl = mount.querySelector('.st-name-input');
+          if (inputEl && inputEl.value.trim()) myStudentProfile.name = inputEl.value.trim();
           myStudentProfile.avatar = btn.dataset.avatar;
           saveMyStudentProfile();
           postStudentJoinToCloud();
@@ -1769,11 +1859,13 @@ function renderStudentControllers() {
       });
 
       mount.querySelector('.st-save-join-btn').addEventListener('click', () => {
-        const nameVal = mount.querySelector('.st-name-input').value.trim() || '학생';
+        const inputEl = mount.querySelector('.st-name-input');
+        const nameVal = (inputEl ? inputEl.value.trim() : '') || myStudentProfile.name || '학생';
         myStudentProfile.name = nameVal;
         saveMyStudentProfile();
         isEditingStudentProfile = false;
         joinAsStudent();
+        showToast(`${myStudentProfile.name} 아바타가 광장 무대에 입장했습니다!`);
       });
 
       return;
@@ -1782,10 +1874,9 @@ function renderStudentControllers() {
     // 2. 게임 진행 컨트롤러 모드
     const activeChoice = myLocalChoice || (meOnServer ? meOnServer.choice : 'CENTER');
     const isAlive = meOnServer ? meOnServer.alive : true;
-    const currentQKey = q ? `${q.id}_${gameState.phase}_${isAlive}` : `lobby_${gameState.phase}`;
+    const myEmote = meOnServer && meOnServer.emote ? meOnServer.emote : '';
+    const currentQKey = `${q ? q.id : 'noq'}_${gameState.phase}_${isAlive}_${myStudentProfile.avatar}_${myStudentProfile.name}_${myStudentProfile.country}_${myEmote}_${playersArr.length}`;
 
-    // 화면 상태(문제 번호/상태/생존여부)가 변경되었을 때만 전체 레이아웃을 다시 그리고,
-    // 타이머 틱 동안에는 기존 버튼을 파괴하지 않고 유지하여 모바일 터치 이벤트 누락을 100% 방지합니다!
     if (mount.dataset.lastQKey !== currentQKey) {
       mount.dataset.lastQKey = currentQKey;
 
@@ -1801,8 +1892,19 @@ function renderStudentControllers() {
       } else if (gameState.phase === 'LOBBY') {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
-            <strong>교실 대기광장에 입장 완료</strong><br/>
-            <small style="color:#15803d;">문제가 시작되면 A 또는 B 선택 버튼이 활성화됩니다.</small>
+            <strong>✨ 교실 대기광장에 입장 완료! (현재 ${playersArr.length}명 접속 중)</strong><br/>
+            <small style="color:#15803d;">선생님이 문제를 시작하면 A 또는 B 선택 버튼이 나타납니다.</small>
+          </div>
+          <div class="field-group">
+            <label>🎨 내 캐릭터 색상 바로 바꾸기 (15종 클릭 시 즉시 반영)</label>
+            <div class="st-quick-avatar-strip">
+              ${Object.entries(AVATAR_CATALOG).map(([key, info]) => `
+                <button type="button" class="st-quick-av-btn ${myStudentProfile.avatar === key ? 'selected' : ''}" data-avatar="${key}">
+                  <div>${renderCreatureThumb(key)}</div>
+                  <span>${info.label}</span>
+                </button>
+              `).join('')}
+            </div>
           </div>
         `;
       } else if (gameState.phase === 'QUESTION' && q) {
@@ -1814,31 +1916,31 @@ function renderStudentControllers() {
             <div class="st-sentence-val">${escapeHtml(q.sentence)}</div>
           </div>
           <div class="st-ab-buttons">
-            <button type="button" class="st-choice-btn btn-a" data-choice="A">
+            <button type="button" class="st-choice-btn btn-a ${activeChoice === 'A' ? 'selected' : ''}" data-choice="A">
               <span class="st-choice-letter">A</span>
               <span class="st-choice-word">${escapeHtml(q.optionA)}</span>
             </button>
-            <button type="button" class="st-choice-btn btn-b" data-choice="B">
+            <button type="button" class="st-choice-btn btn-b ${activeChoice === 'B' ? 'selected' : ''}" data-choice="B">
               <span class="st-choice-letter">B</span>
               <span class="st-choice-word">${escapeHtml(q.optionB)}</span>
             </button>
           </div>
           <p class="st-choice-guide" style="text-align:center; font-size:0.82rem; color:#64748b; font-weight:600;">
-            ${activeChoice === 'CENTER' ? '버튼을 누르면 아바타가 선택한 구역으로 이동합니다.' : `현재 [${activeChoice}] 구역에 서 있습니다.`}
+            ${activeChoice === 'CENTER' ? '버튼을 누르면 아바타가 선택한 구역으로 달려갑니다.' : `🏃 현재 [${activeChoice}] 구역 앞에 서 있습니다!`}
           </p>
         `;
       } else if ((gameState.phase === 'REVEAL' || gameState.phase === 'DROP') && q) {
         const wonRound = activeChoice === q.answer;
         centerContentHtml = `
           <div class="st-question-prompt" style="background:${wonRound ? '#ecfdf5' : '#fef2f2'}; color:${wonRound ? '#047857' : '#b91c1c'};">
-            ${wonRound ? '정답입니다! 살아남았습니다.' : '오답 구역입니다!'}
+            ${wonRound ? '🎉 정답입니다! 살아남았습니다!' : '💦 오답 구역입니다!'}
             <div style="margin-top:6px; font-size:0.86rem; color:#334155;">정답: <strong>${q.answer}. ${escapeHtml(q.answer === 'A' ? q.optionA : q.optionB)}</strong></div>
           </div>
         `;
       } else if (gameState.phase === 'WINNER') {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:#fef3c7; color:#92400e;">
-            최후의 서바이벌 우승자 발표 중
+            🏆 최후의 서바이벌 우승자 발표 중!
           </div>
         `;
       }
@@ -1849,14 +1951,19 @@ function renderStudentControllers() {
             <div class="st-me-info">
               <div class="st-me-thumb">${renderCreatureThumb(myStudentProfile.avatar)}</div>
               <div>
-                <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)}</div>
+                <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)} <span style="font-size:0.78rem; color:#6366f1;">(${av.label})</span></div>
                 <div class="st-me-status" style="color:${isAlive ? '#059669' : '#e11d48'};">
                   ${isAlive ? '🌟 생존 중' : '☁️ 탈락 (다음 문제에 부활)'} · 누적 ${meOnServer ? meOnServer.score : 0}점
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-outline-sm st-edit-profile-btn">아바타 변경</button>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-outline-sm st-edit-profile-btn">이름/국기 수정</button>
+              <button type="button" class="btn btn-subtle btn-sm st-go-stage-btn">🏝️ 광장 무대 보기</button>
+            </div>
           </div>
+
+          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name, myStudentProfile.country, myEmote)}
 
           <div class="st-dynamic-content">${centerContentHtml}</div>
 
@@ -1880,18 +1987,33 @@ function renderStudentControllers() {
         });
       }
 
+      const goStageBtn = mount.querySelector('.st-go-stage-btn');
+      if (goStageBtn) {
+        goStageBtn.addEventListener('click', () => {
+          switchView('stage');
+        });
+      }
+
+      mount.querySelectorAll('.st-quick-av-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          myStudentProfile.avatar = btn.dataset.avatar;
+          saveMyStudentProfile();
+          postStudentJoinToCloud();
+          renderStudentControllers();
+        });
+      });
+
       mount.querySelectorAll('.st-choice-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const choice = btn.dataset.choice;
           myLocalChoice = choice;
           sfx.step();
 
-          // 즉시 UI 선택 스타일 반영
           mount.querySelectorAll('.st-choice-btn').forEach(b => {
             b.classList.toggle('selected', b.dataset.choice === choice);
           });
           const guide = mount.querySelector('.st-choice-guide');
-          if (guide) guide.textContent = `🏃 [${choice}] 구역으로 걸어갔습니다!`;
+          if (guide) guide.textContent = `🏃 [${choice}] 구역으로 달려갔습니다!`;
 
           sendStudentAction({
             type: 'student:choose',
@@ -1915,7 +2037,6 @@ function renderStudentControllers() {
         });
       });
     } else {
-      // DOM 재구축 없이 타이머 숫자 및 버튼 선택 상태만 갱신 (터치 안정성 극대화)
       const timerVal = mount.querySelector('.st-timer-val');
       if (timerVal) {
         timerVal.textContent = Number(gameState.timeRemaining).toFixed(1);
@@ -2199,7 +2320,8 @@ function bindEditorEvents() {
 // 모달 이벤트 (QR 초대 & 대량 텍스트 붙여넣기)
 // =========================================================================
 function updateInviteModalUI() {
-  const url = serverInfo.studentLanUrl || getStudentInviteUrl(gameState.roomCode);
+  const url = getStudentInviteUrl(gameState.roomCode);
+  serverInfo.studentLanUrl = url;
   const input = document.getElementById('studentLanUrlInput');
   const qrImg = document.getElementById('qrCodeImage');
   const codeEl = document.getElementById('modalRoomCode');
@@ -2207,7 +2329,12 @@ function updateInviteModalUI() {
   if (input) input.value = url;
   if (codeEl) codeEl.textContent = gameState.roomCode || '1004';
   if (qrImg) {
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+    const primaryQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(url)}`;
+    const fallbackQr = `https://quickchart.io/qr?size=220&margin=1&text=${encodeURIComponent(url)}`;
+    qrImg.onerror = () => {
+      if (qrImg.src !== fallbackQr) qrImg.src = fallbackQr;
+    };
+    qrImg.src = primaryQr;
   }
 }
 
@@ -2332,13 +2459,16 @@ function bindModalEvents() {
 function showToast(msg) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
+  while (container.children.length >= 2) {
+    container.firstElementChild.remove();
+  }
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;
   container.appendChild(el);
   setTimeout(() => {
     el.remove();
-  }, 3000);
+  }, 2200);
 }
 
 function escapeHtml(str) {

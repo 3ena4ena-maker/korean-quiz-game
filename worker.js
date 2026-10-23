@@ -124,9 +124,11 @@ export class QuizRoom {
 
       const mergedPlayers = {};
 
-      // 1. Preserve all real (non-bot) students already connected to the cloud room
+      // 1. Preserve all real (non-bot) students and active bots unless clearBotsOnly is requested
       for (const [id, existingPlayer] of Object.entries(this.roomState.players)) {
         if (!existingPlayer.isBot) {
+          mergedPlayers[id] = { ...existingPlayer };
+        } else if (!msg.clearBotsOnly) {
           mergedPlayers[id] = { ...existingPlayer };
         }
       }
@@ -144,10 +146,13 @@ export class QuizRoom {
             const incomingChoice = p.choice;
             mergedPlayers[p.id] = {
               ...mergedPlayers[p.id],
+              name: p.name || mergedPlayers[p.id].name,
+              avatar: p.avatar || mergedPlayers[p.id].avatar || 'coral_peach',
+              country: p.country || mergedPlayers[p.id].country || '🌏',
               alive: (msg.reviveAll || isNewRoundStart) ? true : mergedPlayers[p.id].alive,
-              falling: isNewRoundStart ? false : mergedPlayers[p.id].falling,
-              score: Math.max(mergedPlayers[p.id].score || 0, p.score || 0),
-              choice: isNewRoundStart
+              falling: (msg.reviveAll || isNewRoundStart) ? false : mergedPlayers[p.id].falling,
+              score: msg.resetScores ? 0 : Math.max(mergedPlayers[p.id].score || 0, p.score || 0),
+              choice: (isNewRoundStart || msg.resetChoices)
                 ? 'CENTER'
                 : ((existingChoice === 'A' || existingChoice === 'B') ? existingChoice : (incomingChoice || 'CENTER'))
             };
@@ -239,7 +244,7 @@ export class QuizRoom {
       this.roomState.players[id] = {
         id,
         name: String(p.name || '학생').trim().slice(0, 14),
-        avatar: p.avatar || 'bear',
+        avatar: p.avatar || 'coral_peach',
         country: p.country || '🌏',
         choice: existing ? existing.choice : 'CENTER',
         alive: existing ? existing.alive : true,
@@ -264,7 +269,7 @@ export class QuizRoom {
           player = {
             id: playerId,
             name: '학생',
-            avatar: 'bear',
+            avatar: 'coral_peach',
             country: '🌏',
             choice: 'CENTER',
             alive: true,
