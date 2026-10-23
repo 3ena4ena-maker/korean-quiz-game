@@ -659,24 +659,22 @@ function clearHostTimers() {
 
 function buildPublicState() {
   const activeSet = getActiveQuizSet();
+  const rawQ = activeSet && activeSet.questions[gameState.questionIndex];
   const totalQuestions = activeSet ? activeSet.questions.length : 0;
-  let safeQuestion = null;
+  let fullQuestion = null;
 
-  if (gameState.currentQuestion) {
-    safeQuestion = {
-      id: gameState.currentQuestion.id,
-      category: gameState.currentQuestion.category || '어휘/문법',
-      sentence: gameState.currentQuestion.sentence,
-      translation: gameState.currentQuestion.translation || '',
-      optionA: gameState.currentQuestion.optionA,
-      optionB: gameState.currentQuestion.optionB,
-      timeLimit: gameState.timeLimit,
-      answer: ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase)
-        ? gameState.currentQuestion.answer
-        : null,
-      explanation: ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase)
-        ? gameState.currentQuestion.explanation
-        : ''
+  const src = gameState.currentQuestion || rawQ;
+  if (src) {
+    fullQuestion = {
+      id: src.id,
+      category: src.category || '어휘/문법',
+      sentence: src.sentence,
+      translation: src.translation || '',
+      optionA: src.optionA,
+      optionB: src.optionB,
+      timeLimit: gameState.timeLimit || src.timeLimit || 10,
+      answer: String(src.answer || 'A').toUpperCase().trim(),
+      explanation: src.explanation || ''
     };
   }
 
@@ -687,7 +685,7 @@ function buildPublicState() {
     activeSetTitle: activeSet ? activeSet.title : '',
     questionIndex: gameState.questionIndex,
     totalQuestions,
-    currentQuestion: safeQuestion,
+    currentQuestion: fullQuestion,
     timeLimit: gameState.timeLimit,
     timeRemaining: gameState.timeRemaining,
     overrideTimeLimit: gameState.overrideTimeLimit,
@@ -784,15 +782,22 @@ function hostScheduleBotMoves() {
 
 function hostTriggerRevealAndDrop() {
   clearHostTimers();
-  if (!gameState.currentQuestion) return;
+  const activeSet = getActiveQuizSet();
+  const rawQ = (activeSet && activeSet.questions[gameState.questionIndex]) || gameState.currentQuestion;
+  if (!rawQ) return;
 
+  const answer = String(rawQ.answer || (gameState.currentQuestion && gameState.currentQuestion.answer) || 'A').toUpperCase().trim();
   gameState.phase = 'REVEAL';
-  const answer = gameState.currentQuestion.answer;
+  if (gameState.currentQuestion) {
+    gameState.currentQuestion.answer = answer;
+  }
+
   const eliminated = [];
 
   Object.values(hostPlayersMap).forEach(p => {
     if (!p.alive) return;
-    if (p.choice === answer) {
+    const pChoice = String(p.choice || '').toUpperCase().trim();
+    if (pChoice === answer) {
       p.score = (p.score || 0) + 1;
       p.falling = false;
     } else {
@@ -1152,7 +1157,8 @@ function renderStageUI() {
     document.getElementById('timerProgressBar').style.width = `${pct}%`;
 
     const isRevealed = ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase);
-    const correctWord = q.answer === 'A' ? q.optionA : q.optionB;
+    const isAnswerA = String(q.answer || 'A').toUpperCase().trim() === 'A';
+    const correctWord = isAnswerA ? q.optionA : q.optionB;
     const slotHtml = isRevealed
       ? `<span class="blank-slot revealed">${escapeHtml(correctWord)}</span>`
       : `<span class="blank-slot">?</span>`;
@@ -1184,9 +1190,12 @@ function renderStageUI() {
   zoneAWord.textContent = q ? q.optionA : '선택지 A';
   zoneBWord.textContent = q ? q.optionB : '선택지 B';
 
-  const countA = alivePlayers.filter(p => p.choice === 'A').length;
-  const countB = alivePlayers.filter(p => p.choice === 'B').length;
-  const countCenter = alivePlayers.filter(p => p.choice !== 'A' && p.choice !== 'B').length;
+  const countA = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'A').length;
+  const countB = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'B').length;
+  const countCenter = alivePlayers.filter(p => {
+    const c = String(p.choice || '').toUpperCase().trim();
+    return c !== 'A' && c !== 'B';
+  }).length;
 
   document.getElementById('zoneACount').textContent = `${countA}명`;
   document.getElementById('zoneBCount').textContent = `${countB}명`;
@@ -1201,8 +1210,9 @@ function renderStageUI() {
   });
 
   if (q && (gameState.phase === 'REVEAL' || gameState.phase === 'DROP')) {
-    const correctZone = q.answer === 'A' ? platformA : platformB;
-    const wrongZone = q.answer === 'A' ? platformB : platformA;
+    const isAnswerA = String(q.answer || 'A').toUpperCase().trim() === 'A';
+    const correctZone = isAnswerA ? platformA : platformB;
+    const wrongZone = isAnswerA ? platformB : platformA;
 
     correctZone.classList.add('is-correct');
     if (gameState.phase === 'REVEAL') {
@@ -1357,7 +1367,9 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
   el.style.top = `${yPct}%`;
 
   const q = gameState.currentQuestion;
-  const isRightAnswer = q && player.choice === q.answer;
+  const qAns = q ? String(q.answer || 'A').toUpperCase().trim() : '';
+  const pChoice = String(player.choice || '').toUpperCase().trim();
+  const isRightAnswer = Boolean(q && pChoice && pChoice === qAns);
   const headEl = el.querySelector('.avatar-head');
   const bubbleEl = el.querySelector('.avatar-bubble');
 

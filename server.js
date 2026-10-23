@@ -158,13 +158,8 @@ function getPublicState() {
       optionA: gameState.currentQuestion.optionA,
       optionB: gameState.currentQuestion.optionB,
       timeLimit: gameState.timeLimit,
-      // Only expose answer & explanation after QUESTION phase ends
-      answer: ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase)
-        ? gameState.currentQuestion.answer
-        : null,
-      explanation: ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase)
-        ? gameState.currentQuestion.explanation
-        : ''
+      answer: String(gameState.currentQuestion.answer || 'A').toUpperCase().trim(),
+      explanation: gameState.currentQuestion.explanation || ''
     };
   }
 
@@ -261,12 +256,13 @@ function triggerRevealAndDrop() {
 
   // Step 1: REVEAL phase (show the answer & wrong players panic for 1.3s)
   gameState.phase = 'REVEAL';
-  const answer = gameState.currentQuestion.answer;
+  const answer = String(gameState.currentQuestion.answer || 'A').toUpperCase().trim();
   const eliminated = [];
 
   Object.values(gameState.players).forEach(p => {
     if (!p.alive) return;
-    if (p.choice === answer) {
+    const pChoice = String(p.choice || '').toUpperCase().trim();
+    if (pChoice === answer) {
       p.score = (p.score || 0) + 1;
       p.falling = false;
     } else {
