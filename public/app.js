@@ -7,35 +7,146 @@ const CLOUD_SYNC_HTTP = 'https://korean-quiz-sync.3ena4ena.workers.dev';
 const CLOUD_SYNC_WS   = 'wss://korean-quiz-sync.3ena4ena.workers.dev';
 
 const AVATAR_CATALOG = {
-  bear:    { emoji: '🐻', label: '곰돌이', headColor: '#fde68a', shirtColor: '#3b82f6' },
-  rabbit:  { emoji: '🐰', label: '토끼',   headColor: '#fce7f3', shirtColor: '#ec4899' },
-  chick:   { emoji: '🐥', label: '삐약이', headColor: '#fef08a', shirtColor: '#f59e0b' },
-  fox:     { emoji: '🦊', label: '여우',   headColor: '#ffedd5', shirtColor: '#ea580c' },
-  panda:   { emoji: '🐼', label: '판다',   headColor: '#f1f5f9', shirtColor: '#10b981' },
-  tiger:   { emoji: '🐯', label: '호랑이', headColor: '#fed7aa', shirtColor: '#dc2626' },
-  frog:    { emoji: '🐸', label: '개구리', headColor: '#bbf7d0', shirtColor: '#16a34a' },
-  cat:     { emoji: '🐱', label: '고양이', headColor: '#e0e7ff', shirtColor: '#6366f1' },
-  dog:     { emoji: '🐶', label: '강아지', headColor: '#fef3c7', shirtColor: '#2563eb' },
-  penguin: { emoji: '🐧', label: '펭귄',   headColor: '#dbeafe', shirtColor: '#0284c7' },
-  hamster: { emoji: '🐹', label: '햄스터', headColor: '#ffedd5', shirtColor: '#d97706' },
-  unicorn: { emoji: '🦄', label: '유니콘', headColor: '#f3e8ff', shirtColor: '#9333ea' }
+  coral_peach: {
+    id: 'coral_peach',
+    label: '코랄이',
+    bodyBg: 'linear-gradient(175deg, #ff8a65 0%, #ea580c 68%, #c2410c 100%)',
+    armBg: '#ea580c',
+    legBg: '#c2410c',
+    iconEmoji: '🧡'
+  },
+  sun_yellow: {
+    id: 'sun_yellow',
+    label: '옐로퐁',
+    bodyBg: 'linear-gradient(175deg, #fef08a 0%, #facc15 65%, #eab308 100%)',
+    armBg: '#facc15',
+    legBg: '#ca8a04',
+    iconEmoji: '💛'
+  },
+  cotton_candy: {
+    id: 'cotton_candy',
+    label: '솜사탕',
+    bodyBg: 'linear-gradient(175deg, #f472b6 0%, #c084fc 48%, #38bdf8 100%)',
+    armBg: '#c084fc',
+    legBg: '#0284c7',
+    iconEmoji: '🍭'
+  },
+  mint_bean: {
+    id: 'mint_bean',
+    label: '민트콩',
+    bodyBg: 'linear-gradient(175deg, #a7f3d0 0%, #34d399 65%, #059669 100%)',
+    armBg: '#10b981',
+    legBg: '#047857',
+    iconEmoji: '🌱'
+  },
+  sky_soda: {
+    id: 'sky_soda',
+    label: '하늘이',
+    bodyBg: 'linear-gradient(175deg, #bae6fd 0%, #38bdf8 65%, #0284c7 100%)',
+    armBg: '#38bdf8',
+    legBg: '#0369a1',
+    iconEmoji: '🩵'
+  },
+  lavender_mochi: {
+    id: 'lavender_mochi',
+    label: '라벤더',
+    bodyBg: 'linear-gradient(175deg, #e9d5ff 0%, #a855f7 65%, #7e22ce 100%)',
+    armBg: '#a855f7',
+    legBg: '#6b21a8',
+    iconEmoji: '💜'
+  },
+  peach_ball: {
+    id: 'peach_ball',
+    label: '피치볼',
+    bodyBg: 'linear-gradient(175deg, #fbcfe8 0%, #f472b6 65%, #db2777 100%)',
+    armBg: '#f472b6',
+    legBg: '#be185d',
+    iconEmoji: '🍑'
+  },
+  orange_tang: {
+    id: 'orange_tang',
+    label: '망고탱',
+    bodyBg: 'linear-gradient(175deg, #fed7aa 0%, #fb923c 65%, #ea580c 100%)',
+    armBg: '#fb923c',
+    legBg: '#c2410c',
+    iconEmoji: '🍊'
+  },
+  lime_drop: {
+    id: 'lime_drop',
+    label: '라임팝',
+    bodyBg: 'linear-gradient(175deg, #d9f99d 0%, #a3e635 65%, #65a30d 100%)',
+    armBg: '#a3e635',
+    legBg: '#4d7c0f',
+    iconEmoji: '🍈'
+  },
+  berry_punch: {
+    id: 'berry_punch',
+    label: '베리베리',
+    bodyBg: 'linear-gradient(175deg, #f5d0fe 0%, #d946ef 65%, #a21caf 100%)',
+    armBg: '#d946ef',
+    legBg: '#86198f',
+    iconEmoji: '🍇'
+  },
+  ocean_marine: {
+    id: 'ocean_marine',
+    label: '마린이',
+    bodyBg: 'linear-gradient(175deg, #99f6e4 0%, #14b8a6 65%, #0f766e 100%)',
+    armBg: '#14b8a6',
+    legBg: '#115e59',
+    iconEmoji: '🌊'
+  },
+  vanilla_puff: {
+    id: 'vanilla_puff',
+    label: '바닐라',
+    bodyBg: 'linear-gradient(175deg, #fef9c3 0%, #fde047 65%, #ca8a04 100%)',
+    armBg: '#facc15',
+    legBg: '#a16207',
+    iconEmoji: '🧈'
+  },
+  cherry_chiffon: {
+    id: 'cherry_chiffon',
+    label: '체리퐁',
+    bodyBg: 'linear-gradient(175deg, #fecdd3 0%, #f43f5e 65%, #be123c 100%)',
+    armBg: '#f43f5e',
+    legBg: '#9f1239',
+    iconEmoji: '🍒'
+  },
+  matcha_roll: {
+    id: 'matcha_roll',
+    label: '말차롤',
+    bodyBg: 'linear-gradient(175deg, #bbf7d0 0%, #22c55e 65%, #15803d 100%)',
+    armBg: '#22c55e',
+    legBg: '#166534',
+    iconEmoji: '🍵'
+  },
+  cloud_pearl: {
+    id: 'cloud_pearl',
+    label: '몽실구름',
+    bodyBg: 'linear-gradient(175deg, #f8fafc 0%, #cbd5e1 65%, #64748b 100%)',
+    armBg: '#94a3b8',
+    legBg: '#475569',
+    iconEmoji: '☁️'
+  }
 };
 
 const COUNTRY_LIST = ['🇰🇷', '🇺🇸', '🇯🇵', '🇻🇳', '🇨🇳', '🇫🇷', '🇪🇸', '🇧🇷', '🇺🇿', '🇮🇩', '🇩🇪', '🇹🇭', '🌏'];
 
 const BOT_PROFILES = [
-  { name: '마이클', country: '🇺🇸', avatar: 'bear' },
-  { name: '유키', country: '🇯🇵', avatar: 'rabbit' },
-  { name: '민트랑', country: '🇻🇳', avatar: 'chick' },
-  { name: '엘레나', country: '🇫🇷', avatar: 'fox' },
-  { name: '하오란', country: '🇨🇳', avatar: 'panda' },
-  { name: '소피아', country: '🇪🇸', avatar: 'cat' },
-  { name: '레오', country: '🇧🇷', avatar: 'tiger' },
-  { name: '나타샤', country: '🇺🇿', avatar: 'unicorn' },
-  { name: '아민', country: '🇮🇩', avatar: 'frog' },
-  { name: '줄리아', country: '🇩🇪', avatar: 'dog' },
-  { name: '케빈', country: '🇨🇦', avatar: 'penguin' },
-  { name: '메이', country: '🇹🇭', avatar: 'hamster' }
+  { name: '마이클', country: '🇺🇸', avatar: 'coral_peach' },
+  { name: '유키', country: '🇯🇵', avatar: 'cotton_candy' },
+  { name: '민트랑', country: '🇻🇳', avatar: 'mint_bean' },
+  { name: '엘레나', country: '🇫🇷', avatar: 'lavender_mochi' },
+  { name: '하오란', country: '🇨🇳', avatar: 'sun_yellow' },
+  { name: '소피아', country: '🇪🇸', avatar: 'peach_ball' },
+  { name: '레오', country: '🇧🇷', avatar: 'orange_tang' },
+  { name: '나타샤', country: '🇺🇿', avatar: 'sky_soda' },
+  { name: '아민', country: '🇮🇩', avatar: 'matcha_roll' },
+  { name: '줄리아', country: '🇩🇪', avatar: 'cherry_chiffon' },
+  { name: '케빈', country: '🇨🇦', avatar: 'ocean_marine' },
+  { name: '메이', country: '🇹🇭', avatar: 'lime_drop' },
+  { name: '루카스', country: '🇮🇹', avatar: 'berry_punch' },
+  { name: '엠마', country: '🇬🇧', avatar: 'vanilla_puff' },
+  { name: '사라', country: '🇪🇬', avatar: 'cloud_pearl' }
 ];
 
 const DEFAULT_QUIZ_DATABASE = {
@@ -391,11 +502,17 @@ function loadMyStudentProfile() {
   const saved = localStorage.getItem('kor_quiz_student_profile');
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        if (!AVATAR_CATALOG[parsed.avatar]) {
+          parsed.avatar = 'coral_peach';
+        }
+        return parsed;
+      }
     } catch (_) {}
   }
   const randomAvatars = Object.keys(AVATAR_CATALOG);
-  const pickAv = randomAvatars[Math.floor(Math.random() * randomAvatars.length)];
+  const pickAv = randomAvatars[Math.floor(Math.random() * randomAvatars.length)] || 'coral_peach';
   const profile = {
     playerId: 'stu_' + Math.random().toString(36).slice(2, 10),
     name: '학생' + Math.floor(10 + Math.random() * 89),
@@ -1284,14 +1401,40 @@ function renderStageUI() {
     banner.textContent = `최후까지 살아남은 우승자를 축하해주세요!`;
   }
 
+function getAvatarInfo(key) {
+  return AVATAR_CATALOG[key] || AVATAR_CATALOG.coral_peach;
+}
+
+function renderCreatureThumb(key) {
+  const av = getAvatarInfo(key);
+  return `
+    <div class="creature-thumb" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
+      <div class="thumb-body">
+        <div class="thumb-shine"></div>
+        <div class="thumb-eye left"></div>
+        <div class="thumb-eye right"></div>
+        <div class="thumb-blush left"></div>
+        <div class="thumb-blush right"></div>
+        <div class="thumb-mouth"></div>
+        <div class="thumb-arm left"></div>
+        <div class="thumb-arm right"></div>
+      </div>
+      <div class="thumb-legs">
+        <div class="thumb-leg left"></div>
+        <div class="thumb-leg right"></div>
+      </div>
+    </div>
+  `;
+}
+
   document.getElementById('eliminatedCount').textContent = eliminatedPlayers.length;
   const elimList = document.getElementById('eliminatedList');
   if (eliminatedPlayers.length === 0) {
     elimList.innerHTML = `<span class="elim-empty">탈락한 학생이 없습니다.</span>`;
   } else {
     elimList.innerHTML = eliminatedPlayers.map(p => {
-      const av = AVATAR_CATALOG[p.avatar] || AVATAR_CATALOG.bear;
-      return `<span class="elim-chip">${av.emoji} ${escapeHtml(p.name)}</span>`;
+      const av = getAvatarInfo(p.avatar);
+      return `<span class="elim-chip">${av.iconEmoji} ${escapeHtml(p.name)}</span>`;
     }).join('');
   }
 
@@ -1356,14 +1499,12 @@ function computeAvatarPosition(zoneKey, index, totalInZone) {
 }
 
 function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
-  const av = AVATAR_CATALOG[player.avatar] || AVATAR_CATALOG.bear;
+  const av = getAvatarInfo(player.avatar);
   let record = avatarDomMap.get(player.id);
 
   if (!record) {
     const el = document.createElement('div');
     el.className = 'avatar-actor';
-    el.style.setProperty('--av-color', av.headColor);
-    el.style.setProperty('--av-shirt', av.shirtColor);
     el.style.left = `${xPct}%`;
     el.style.top = `${yPct}%`;
 
@@ -1373,15 +1514,22 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
         <span class="av-flag">${escapeHtml(player.country || '🌏')}</span>
         <span class="av-name">${escapeHtml(player.name)}</span>
       </div>
-      <div class="avatar-figure">
-        <div class="avatar-head">${av.emoji}</div>
-        <div class="avatar-torso">
-          <div class="avatar-arm left"></div>
-          <div class="avatar-arm right"></div>
+      <div class="avatar-creature" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
+        <div class="creature-body">
+          <div class="creature-shine"></div>
+          <div class="creature-face">
+            <div class="creature-eye left"></div>
+            <div class="creature-eye right"></div>
+            <div class="creature-blush left"></div>
+            <div class="creature-blush right"></div>
+            <div class="creature-mouth"></div>
+          </div>
+          <div class="creature-arm left"></div>
+          <div class="creature-arm right"></div>
         </div>
-        <div class="avatar-legs">
-          <div class="avatar-leg left"></div>
-          <div class="avatar-leg right"></div>
+        <div class="creature-legs">
+          <div class="creature-leg left"></div>
+          <div class="creature-leg right"></div>
         </div>
       </div>
       <div class="avatar-shadow"></div>
@@ -1393,8 +1541,13 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
   }
 
   const { el } = record;
-  el.style.setProperty('--av-color', av.headColor);
-  el.style.setProperty('--av-shirt', av.shirtColor);
+  const creatureEl = el.querySelector('.avatar-creature');
+  if (creatureEl) {
+    creatureEl.style.setProperty('--creature-bg', av.bodyBg);
+    creatureEl.style.setProperty('--creature-arm', av.armBg);
+    creatureEl.style.setProperty('--creature-leg', av.legBg);
+  }
+
   el.classList.toggle('is-me', player.id === myStudentProfile.playerId);
 
   el.querySelector('.av-flag').textContent = player.country || '🌏';
@@ -1407,7 +1560,7 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
     if (record.walkTimer) clearTimeout(record.walkTimer);
     record.walkTimer = setTimeout(() => {
       el.classList.remove('is-walking');
-    }, 680);
+    }, 720);
   }
 
   el.style.left = `${xPct}%`;
@@ -1417,11 +1570,9 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
   const qAns = q ? String(q.answer || 'A').toUpperCase().trim() : '';
   const pChoice = String(player.choice || '').toUpperCase().trim();
   const isRightAnswer = Boolean(q && pChoice && pChoice === qAns);
-  const headEl = el.querySelector('.avatar-head');
   const bubbleEl = el.querySelector('.avatar-bubble');
 
   el.classList.remove('is-celebrating', 'is-panicking', 'is-falling');
-  headEl.textContent = av.emoji;
 
   let bubbleText = player.emote || '';
 
@@ -1431,8 +1582,7 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
       bubbleText = '정답! ✨';
     } else {
       el.classList.add('is-panicking');
-      headEl.textContent = '😱';
-      bubbleText = player.choice === 'CENTER' ? '시간 초과?! 💦' : '헉! 오답?! 💦';
+      bubbleText = player.choice === 'CENTER' ? '시간 초과?! 💦' : '앗! 오답?! 💦';
     }
   } else if (gameState.phase === 'DROP' && q) {
     if (isRightAnswer) {
@@ -1440,8 +1590,7 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
       bubbleText = '살았다! 🎉';
     } else if (player.falling) {
       el.classList.add('is-falling');
-      headEl.textContent = '😵';
-      bubbleText = '으아아악~!!';
+      bubbleText = '으아아악~!! 💦';
     }
   }
 
@@ -1473,11 +1622,10 @@ function renderWinnerPodium() {
   }
 
   podium.innerHTML = winners.map(w => {
-    const av = AVATAR_CATALOG[w.avatar] || AVATAR_CATALOG.bear;
     return `
       <div class="winner-hero">
         <div class="winner-hero-crown">👑</div>
-        <div class="winner-hero-emoji">${av.emoji}</div>
+        <div class="winner-hero-creature">${renderCreatureThumb(w.avatar)}</div>
         <div class="winner-hero-name">${escapeHtml(w.country || '')} ${escapeHtml(w.name)}</div>
         <div class="winner-hero-score">정답 ${w.score || 0}회 성공!</div>
       </div>
@@ -1531,11 +1679,11 @@ function renderStudentControllers() {
             </div>
           </div>
           <div class="field-group">
-            <label>캐릭터 선택</label>
+            <label>캐릭터 선택 (15가지 귀여운 젤리 친구)</label>
             <div class="avatar-grid">
               ${Object.entries(AVATAR_CATALOG).map(([key, info]) => `
                 <button type="button" class="avatar-pick-btn ${myStudentProfile.avatar === key ? 'selected' : ''}" data-avatar="${key}">
-                  <div>${info.emoji}</div>
+                  <div class="avatar-pick-visual">${renderCreatureThumb(key)}</div>
                   <span>${info.label}</span>
                 </button>
               `).join('')}
@@ -1644,7 +1792,7 @@ function renderStudentControllers() {
         <div class="st-box">
           <div class="st-profile-bar">
             <div class="st-me-info">
-              <span class="st-me-emoji">${av.emoji}</span>
+              <div class="st-me-thumb">${renderCreatureThumb(myStudentProfile.avatar)}</div>
               <div>
                 <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)}</div>
                 <div class="st-me-status" style="color:${isAlive ? '#059669' : '#e11d48'};">

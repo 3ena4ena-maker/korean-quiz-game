@@ -1039,182 +1039,331 @@ body.student-only-mode .nav-menu {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* 아바타 몸체 구조 */
-.avatar-figure {
+/* =========================================
+   귀여운 3D 클레이 젤리 생명체 아바타 (15가지 색상)
+   ========================================= */
+.avatar-creature {
   position: relative;
-  width: 54px;
-  height: 62px;
+  width: 48px;
+  height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: avatarIdle 1.6s ease-in-out infinite alternate;
+  animation: creatureIdleSway 2.5s ease-in-out infinite alternate;
+  transform-origin: bottom center;
 }
 
-@keyframes avatarIdle {
-  from { transform: translateY(0px); }
-  to { transform: translateY(-4px); }
+@keyframes creatureIdleSway {
+  0% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(0deg) translateY(-2px); }
+  100% { transform: rotate(3deg) translateY(0); }
 }
 
-.avatar-head {
-  width: 44px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--av-color, #fde68a);
-  border: 2.5px solid #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.65rem;
+/* 3D 클레이 달걀형 바디 */
+.creature-body {
   position: relative;
-  z-index: 3;
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
-}
-
-.avatar-torso {
-  width: 28px;
-  height: 18px;
-  background: var(--av-shirt, #6366f1);
-  border: 2.5px solid #1e293b;
-  border-radius: 9px 9px 6px 6px;
-  margin-top: -5px;
-  position: relative;
+  width: 46px;
+  height: 52px;
+  border-radius: 50% 50% 46% 46% / 54% 54% 46% 46%;
+  background: var(--creature-bg, linear-gradient(175deg, #ff8a65 0%, #ea580c 68%, #c2410c 100%));
+  box-shadow: inset 0 5px 8px rgba(255, 255, 255, 0.48),
+              inset 0 -6px 10px rgba(0, 0, 0, 0.18),
+              0 6px 14px rgba(0, 0, 0, 0.12);
   z-index: 2;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.avatar-arm {
+/* 상단 3D 엠보싱 하이라이트 광택 */
+.creature-shine {
   position: absolute;
-  top: 2px;
-  width: 8px;
-  height: 14px;
-  background: var(--av-shirt, #6366f1);
-  border: 2px solid #1e293b;
-  border-radius: 6px;
-  transform-origin: top center;
+  top: 5px;
+  left: 9px;
+  width: 13px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.52);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+  pointer-events: none;
 }
 
-.avatar-arm.left { left: -6px; transform: rotate(18deg); }
-.avatar-arm.right { right: -6px; transform: rotate(-18deg); }
+/* 아바타 표정 (초롱초롱한 눈, 발그레한 볼, 미소 입) */
+.creature-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 
-.avatar-legs {
+/* 초롱초롱한 검은 단추 눈 */
+.creature-eye {
+  position: absolute;
+  top: 14px;
+  width: 6.5px;
+  height: 7.5px;
+  background: #18181b;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.creature-eye.left { left: 10px; }
+.creature-eye.right { right: 10px; }
+
+/* 눈 속 반짝이는 하이라이트 */
+.creature-eye::after {
+  content: '';
+  position: absolute;
+  top: 1.2px;
+  left: 1.5px;
+  width: 2.4px;
+  height: 2.4px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+/* 발그레한 붉은 원형 볼터치 */
+.creature-blush {
+  position: absolute;
+  top: 18px;
+  width: 9.5px;
+  height: 9.5px;
+  background: #ef4444;
+  border-radius: 50%;
+  opacity: 0.9;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
+}
+
+.creature-blush.left { left: 3px; }
+.creature-blush.right { right: 3px; }
+
+/* 귀여운 반달 미소 입 */
+.creature-mouth {
+  position: absolute;
+  top: 21px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11px;
+  height: 5.5px;
+  border-bottom: 2.2px solid #18181b;
+  border-radius: 0 0 10px 10px;
+  transition: all 0.2s;
+}
+
+/* 짧고 앙증맞은 팔 */
+.creature-arm {
+  position: absolute;
+  top: 22px;
+  width: 9px;
+  height: 16px;
+  background: var(--creature-arm, #ea580c);
+  border-radius: 8px;
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.16);
+  transform-origin: top center;
+  transition: transform 0.2s;
+}
+
+.creature-arm.left {
+  left: -4px;
+  transform: rotate(14deg);
+}
+
+.creature-arm.right {
+  right: -4px;
+  transform: rotate(-14deg);
+  /* 대기 중 살짝 손을 드는 모션 */
+  animation: creatureHandWave 3.8s ease-in-out infinite;
+}
+
+@keyframes creatureHandWave {
+  0%, 65%, 100% {
+    transform: rotate(-14deg);
+  }
+  72% {
+    transform: rotate(-95deg);
+  }
+  78% {
+    transform: rotate(-72deg);
+  }
+  84% {
+    transform: rotate(-95deg);
+  }
+  90% {
+    transform: rotate(-72deg);
+  }
+  95% {
+    transform: rotate(-14deg);
+  }
+}
+
+/* 통통한 짧은 다리/발 */
+.creature-legs {
   display: flex;
   gap: 5px;
+  justify-content: center;
   margin-top: -3px;
   z-index: 1;
 }
 
-.avatar-leg {
-  width: 9px;
-  height: 12px;
-  background: #334155;
-  border: 2px solid #1e293b;
-  border-radius: 0 0 5px 5px;
+.creature-leg {
+  width: 11px;
+  height: 9px;
+  background: var(--creature-leg, #c2410c);
+  border-radius: 5px 5px 8px 8px;
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.2);
   transform-origin: top center;
+  transition: transform 0.15s;
 }
 
 .avatar-shadow {
-  width: 38px;
-  height: 9px;
+  width: 36px;
+  height: 8px;
   background: rgba(15, 23, 42, 0.22);
   border-radius: 50%;
-  margin-top: 2px;
+  margin-top: 3px;
   transition: transform 0.3s, opacity 0.3s;
 }
 
-/* 🚶 아바타가 선택한 정답으로 걸어가는 모션! */
-.avatar-actor.is-walking .avatar-figure {
-  animation: walkBounce 0.22s infinite alternate;
+/* =========================================
+   1. 이동 모션: 짧은 팔다리를 흔들며 통통 뛰듯 달리기
+   ========================================= */
+.avatar-actor.is-walking .avatar-creature {
+  animation: creatureRunBounce 0.22s infinite alternate ease-in-out !important;
 }
 
-.avatar-actor.is-walking .avatar-leg.left {
-  animation: walkLegLeft 0.18s infinite alternate;
+@keyframes creatureRunBounce {
+  0% { transform: translateY(0) scale(1.08, 0.92) rotate(-3.5deg); }
+  100% { transform: translateY(-10px) scale(0.94, 1.08) rotate(3.5deg); }
 }
 
-.avatar-actor.is-walking .avatar-leg.right {
-  animation: walkLegRight 0.18s infinite alternate;
+.avatar-actor.is-walking .creature-leg.left {
+  animation: creatureLegRunLeft 0.18s infinite alternate ease-in-out;
 }
 
-.avatar-actor.is-walking .avatar-arm.left {
-  animation: walkArmLeft 0.18s infinite alternate;
+.avatar-actor.is-walking .creature-leg.right {
+  animation: creatureLegRunRight 0.18s infinite alternate ease-in-out;
 }
 
-.avatar-actor.is-walking .avatar-arm.right {
-  animation: walkArmRight 0.18s infinite alternate;
+@keyframes creatureLegRunLeft {
+  from { transform: rotate(-32deg) translateY(-2px); }
+  to { transform: rotate(32deg) translateY(1px); }
 }
 
-@keyframes walkBounce {
-  from { transform: translateY(0) rotate(-3deg); }
-  to { transform: translateY(-7px) rotate(3deg); }
+@keyframes creatureLegRunRight {
+  from { transform: rotate(32deg) translateY(1px); }
+  to { transform: rotate(-32deg) translateY(-2px); }
 }
 
-@keyframes walkLegLeft {
-  from { transform: rotate(-28deg); }
-  to { transform: rotate(28deg); }
+.avatar-actor.is-walking .creature-arm.left {
+  animation: creatureArmRunLeft 0.18s infinite alternate ease-in-out;
 }
 
-@keyframes walkLegRight {
-  from { transform: rotate(28deg); }
-  to { transform: rotate(-28deg); }
+.avatar-actor.is-walking .creature-arm.right {
+  animation: creatureArmRunRight 0.18s infinite alternate ease-in-out !important;
 }
 
-@keyframes walkArmLeft {
-  from { transform: rotate(35deg); }
-  to { transform: rotate(-25deg); }
+@keyframes creatureArmRunLeft {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(-35deg); }
 }
 
-@keyframes walkArmRight {
-  from { transform: rotate(-25deg); }
-  to { transform: rotate(35deg); }
+@keyframes creatureArmRunRight {
+  from { transform: rotate(-35deg); }
+  to { transform: rotate(45deg); }
 }
 
-/* 정답 구역: 높이 펄쩍펄쩍 뛰는 신나는 점프 & 환호 모션 */
-.avatar-actor.is-celebrating .avatar-figure {
-  animation: victoryJoyJump 0.32s ease-in-out infinite alternate;
+/* =========================================
+   2. 정답 공개: 살아남은 아바타는 높이 점프 & 양손 환호
+   ========================================= */
+.avatar-actor.is-celebrating .avatar-creature {
+  animation: creatureJoyJump 0.32s ease-in-out infinite alternate !important;
 }
 
-.avatar-actor.is-celebrating .avatar-head {
-  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.9));
-}
-
-.avatar-actor.is-celebrating .avatar-arm.left {
-  transform: rotate(155deg);
-}
-
-.avatar-actor.is-celebrating .avatar-arm.right {
-  transform: rotate(-155deg);
-}
-
-@keyframes victoryJoyJump {
-  from {
-    transform: translateY(0) scale(1) rotate(-3deg);
+@keyframes creatureJoyJump {
+  0% {
+    transform: translateY(0) scale(1.08, 0.9) rotate(-3deg);
   }
-  to {
-    transform: translateY(-28px) scale(1.16) rotate(3deg);
+  100% {
+    transform: translateY(-30px) scale(0.95, 1.15) rotate(3deg);
   }
 }
 
-/* 오답 확인 시간: 떨어지기 직전 당황 모션 */
-.avatar-actor.is-panicking .avatar-figure {
-  animation: panicTremble 0.1s infinite;
+.avatar-actor.is-celebrating .creature-body {
+  box-shadow: inset 0 5px 8px rgba(255, 255, 255, 0.6),
+              inset 0 -6px 10px rgba(0, 0, 0, 0.15),
+              0 0 22px rgba(250, 204, 21, 0.85),
+              0 8px 16px rgba(0, 0, 0, 0.12) !important;
 }
 
-.avatar-actor.is-panicking .avatar-arm.left {
-  transform: rotate(130deg);
+.avatar-actor.is-celebrating .creature-arm.left {
+  transform: rotate(155deg) !important;
+  animation: none !important;
 }
 
-.avatar-actor.is-panicking .avatar-arm.right {
-  transform: rotate(-130deg);
+.avatar-actor.is-celebrating .creature-arm.right {
+  transform: rotate(-155deg) !important;
+  animation: none !important;
+}
+
+/* 정답 시 활짝 웃는 눈 (^ ^) */
+.avatar-actor.is-celebrating .creature-eye {
+  height: 4px;
+  background: transparent;
+  border-top: 2.8px solid #18181b;
+  border-radius: 8px 8px 0 0;
+}
+
+.avatar-actor.is-celebrating .creature-eye::after {
+  display: none;
+}
+
+/* 정답 시 활짝 벌린 기쁨의 입 */
+.avatar-actor.is-celebrating .creature-mouth {
+  width: 14px;
+  height: 9px;
+  background: #dc2626;
+  border: 1.5px solid #18181b;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.avatar-actor.is-celebrating .creature-mouth::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 2px;
+  width: 10px;
+  height: 5px;
+  background: #f472b6;
+  border-radius: 5px 5px 0 0;
+}
+
+/* =========================================
+   3. 정답 공개: 오답 아바타는 바닥과 함께 아래로 떨어지기
+   ========================================= */
+.avatar-actor.is-panicking .avatar-creature {
+  animation: panicTremble 0.1s infinite !important;
+}
+
+.avatar-actor.is-panicking .creature-arm.left {
+  transform: rotate(120deg) !important;
+}
+
+.avatar-actor.is-panicking .creature-arm.right {
+  transform: rotate(-120deg) !important;
+  animation: none !important;
 }
 
 @keyframes panicTremble {
-  0% { transform: translateX(-3px) rotate(-5deg); }
-  50% { transform: translateX(3px) rotate(5deg); }
-  100% { transform: translateX(-3px) rotate(-5deg); }
+  0% { transform: translateX(-3px) rotate(-4deg); }
+  50% { transform: translateX(3px) rotate(4deg); }
+  100% { transform: translateX(-3px) rotate(-4deg); }
 }
 
-/* 오답 아바타: 코믹 덤블링 낙하 모션 (0.85초 짧고 명쾌함) */
 .avatar-actor.is-falling {
   pointer-events: none;
-  animation: comicTumbleDrop 0.85s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+  z-index: 15;
+  animation: creatureComicDrop 0.88s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards !important;
 }
 
 .avatar-actor.is-falling .avatar-shadow {
@@ -1222,23 +1371,190 @@ body.student-only-mode .nav-menu {
   transform: scale(0.1);
 }
 
-@keyframes comicTumbleDrop {
+.avatar-actor.is-falling .creature-mouth {
+  width: 8px;
+  height: 8px;
+  background: #18181b;
+  border-radius: 50%;
+  border-bottom: none;
+}
+
+.avatar-actor.is-falling .creature-arm.left {
+  transform: rotate(140deg) !important;
+  animation: none !important;
+}
+
+.avatar-actor.is-falling .creature-arm.right {
+  transform: rotate(-140deg) !important;
+  animation: none !important;
+}
+
+@keyframes creatureComicDrop {
   0% {
     transform: translate(-50%, -50%) translateY(0) rotate(0deg) scale(1);
     opacity: 1;
   }
   20% {
-    transform: translate(-50%, -50%) translateY(-26px) rotate(-16deg) scale(1.18);
+    transform: translate(-50%, -50%) translateY(-18px) rotate(-14deg) scale(1.1);
     opacity: 1;
   }
   45% {
-    transform: translate(-50%, -50%) translateY(20px) rotate(40deg) scale(0.9);
-    opacity: 1;
+    transform: translate(-50%, -50%) translateY(28px) rotate(40deg) scale(0.92);
+    opacity: 0.95;
   }
   100% {
-    transform: translate(-50%, -50%) translateY(320px) rotate(260deg) scale(0.18);
+    transform: translate(-50%, -50%) translateY(360px) rotate(240deg) scale(0.18);
     opacity: 0;
   }
+}
+
+/* =========================================
+   미니 썸네일 & 모바일/우승단상 렌더링 컴포넌트
+   ========================================= */
+.creature-thumb {
+  position: relative;
+  width: 28px;
+  height: 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: bottom center;
+}
+
+.thumb-body {
+  position: relative;
+  width: 26px;
+  height: 30px;
+  border-radius: 50% 50% 46% 46% / 54% 54% 46% 46%;
+  background: var(--creature-bg);
+  box-shadow: inset 0 3px 4px rgba(255, 255, 255, 0.45),
+              inset 0 -3px 5px rgba(0, 0, 0, 0.16),
+              0 3px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.thumb-shine {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  width: 7px;
+  height: 3.5px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.thumb-eye {
+  position: absolute;
+  top: 8px;
+  width: 3.8px;
+  height: 4.4px;
+  background: #18181b;
+  border-radius: 50%;
+}
+.thumb-eye.left { left: 5px; }
+.thumb-eye.right { right: 5px; }
+
+.thumb-blush {
+  position: absolute;
+  top: 10px;
+  width: 5.5px;
+  height: 5.5px;
+  background: #ef4444;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+.thumb-blush.left { left: 2px; }
+.thumb-blush.right { right: 2px; }
+
+.thumb-mouth {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 3px;
+  border-bottom: 1.5px solid #18181b;
+  border-radius: 0 0 6px 6px;
+}
+
+.thumb-arm {
+  position: absolute;
+  top: 12px;
+  width: 5px;
+  height: 9px;
+  background: var(--creature-arm);
+  border-radius: 4px;
+}
+.thumb-arm.left { left: -2px; transform: rotate(12deg); }
+.thumb-arm.right { right: -2px; transform: rotate(-12deg); }
+
+.thumb-legs {
+  display: flex;
+  gap: 3px;
+  margin-top: -2px;
+  z-index: 1;
+}
+
+.thumb-leg {
+  width: 6.5px;
+  height: 5.5px;
+  background: var(--creature-leg);
+  border-radius: 3px 3px 5px 5px;
+}
+
+/* 캐릭터 선택 버튼 스타일 개선 */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.avatar-pick-btn {
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 8px 4px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+.avatar-pick-btn:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+}
+
+.avatar-pick-btn.selected {
+  border-color: #4f46e5;
+  background: #f5f3ff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  transform: scale(1.05);
+}
+
+.avatar-pick-btn span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.st-me-thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.winner-hero-creature {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+  transform: scale(1.4);
 }
 
 /* 탈락자 관람석 */
@@ -1713,37 +2029,6 @@ body.student-only-mode .nav-menu {
   font-weight: 700;
 }
 
-.avatar-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.avatar-pick-btn {
-  border: 2px solid #e2e8f0;
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 8px 4px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  font-size: 1.5rem;
-  transition: all 0.15s;
-}
-
-.avatar-pick-btn span {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #475569;
-}
-
-.avatar-pick-btn.selected {
-  border-color: #4f46e5;
-  background: #eef2ff;
-  transform: scale(1.04);
-}
 
 .st-question-prompt {
   background: #f1f5f9;
