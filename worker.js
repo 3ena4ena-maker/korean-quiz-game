@@ -23,6 +23,7 @@ export class QuizRoom {
     this.env = env;
     this.sessions = new Set();
     this.customAnswersMap = {}; // questionId -> 'A' | 'B'
+    this.kickedIds = new Set();
     this.roomState = {
       roomCode: '1004',
       phase: 'LOBBY',
@@ -62,9 +63,11 @@ export class QuizRoom {
   }
 
   getPublicState() {
+    const raw = this.roomState.players;
+    const list = Array.isArray(raw) ? raw : Object.values(raw || {});
     return {
       ...this.roomState,
-      players: Object.values(this.roomState.players)
+      players: list
     };
   }
 
@@ -123,9 +126,15 @@ export class QuizRoom {
       }
 
       const mergedPlayers = {};
+      const existingMap = {};
+      if (Array.isArray(this.roomState.players)) {
+        this.roomState.players.forEach(p => { if (p && p.id) existingMap[p.id] = p; });
+      } else if (this.roomState.players) {
+        Object.assign(existingMap, this.roomState.players);
+      }
 
       // 1. Preserve ONLY real (non-bot) students from roomState that might not be in incoming yet
-      for (const [id, existingPlayer] of Object.entries(this.roomState.players)) {
+      for (const [id, existingPlayer] of Object.entries(existingMap)) {
         if (!existingPlayer.isBot) {
           mergedPlayers[id] = { ...existingPlayer };
         }
@@ -158,6 +167,16 @@ export class QuizRoom {
             mergedPlayers[p.id] = p;
           }
         }
+      }
+
+      if (Array.isArray(msg.kickedIds)) {
+        msg.kickedIds.forEach(id => this.kickedIds.add(id));
+      }
+      if (msg.reviveAll && msg.resetScores) {
+        this.kickedIds.clear();
+      }
+      for (const kid of this.kickedIds) {
+        delete mergedPlayers[kid];
       }
 
       if (isNewRoundStart || msg.resetChoices) {
@@ -226,16 +245,25 @@ export class QuizRoom {
     }
 
     if (msg.type === 'host:kick-player' && msg.playerId) {
-      delete this.roomState.players[msg.playerId];
+      this.kickedIds.add(msg.playerId);
+      if (Array.isArray(this.roomState.players)) {
+        this.roomState.players = this.roomState.players.filter(p => p && p.id !== msg.playerId);
+      } else if (this.roomState.players && typeof this.roomState.players === 'object') {
+        delete this.roomState.players[msg.playerId];
+      }
       this.forwardToAll({ type: 'player:kicked', playerId: msg.playerId });
       this.broadcast();
       return;
     }
 
     if (msg.type === 'teacher:clear-bots') {
-      for (const id of Object.keys(this.roomState.players)) {
-        if (this.roomState.players[id].isBot) {
-          delete this.roomState.players[id];
+      if (Array.isArray(this.roomState.players)) {
+        this.roomState.players = this.roomState.players.filter(p => !p || !p.isBot);
+      } else if (this.roomState.players && typeof this.roomState.players === 'object') {
+        for (const id of Object.keys(this.roomState.players)) {
+          if (this.roomState.players[id].isBot) {
+            delete this.roomState.players[id];
+          }
         }
       }
       this.broadcast();
@@ -245,6 +273,9 @@ export class QuizRoom {
     if (msg.type === 'student:join') {
       const p = msg.payload || {};
       const id = p.playerId || ('stu_' + Date.now());
+      if (this.kickedIds.has(id)) {
+        return;
+      }
       const existing = this.roomState.players[id];
       this.roomState.players[id] = {
         id,

@@ -1230,6 +1230,7 @@ body.student-only-mode .teacher-control-bar {
   flex-direction: column;
   align-items: center;
   z-index: 22;
+  pointer-events: auto !important;
 }
 
 /* 내 아바타 강조 표시 */
@@ -1253,6 +1254,7 @@ body.student-only-mode .teacher-control-bar {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
+  pointer-events: auto !important;
   gap: 3px;
 }
 
@@ -1875,19 +1877,21 @@ body.student-only-mode .teacher-control-bar {
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1;
   font-weight: 800;
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
   margin-left: 3px;
   padding: 0;
   transition: all 0.15s ease;
-  opacity: 0.7;
+  opacity: 0.8;
+  z-index: 30;
 }
 
 .avatar-actor:hover .btn-kick-avatar {
@@ -1906,14 +1910,15 @@ body.student-only-mode .teacher-control-bar {
   color: #64748b;
   border: none;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1;
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
   margin-left: 4px;
   padding: 0;
   transition: all 0.15s ease;
@@ -1921,6 +1926,25 @@ body.student-only-mode .teacher-control-bar {
 
 .btn-kick-chip:hover {
   background: #ef4444;
+  color: #fff;
+  transform: scale(1.15);
+}
+
+/* 학생 전용 화면 및 학생 뷰에서는 내보내기 버튼을 완전히 숨김 */
+body.student-only-mode .btn-kick-avatar,
+body.student-only-mode .btn-kick-chip,
+#view-student-full .btn-kick-avatar,
+#view-student-full .btn-kick-chip,
+.student-controller-container .btn-kick-avatar,
+.student-controller-container .btn-kick-chip {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* 학생 접속 모드에서는 상단 관리 바를 숨겨 최대한 심플하게 표시 */
+body.student-only-mode .student-view-bar {
+  display: none !important;
+}
   color: #fff;
   transform: scale(1.15);
 }

@@ -691,6 +691,7 @@ async function pullCloudRoomState() {
 }
 
 let botsClearedAt = 0;
+const kickedPlayerIds = new Set();
 
 function mergeRealStudentsFromCloud(cloudState) {
   if (!cloudState || !Array.isArray(cloudState.players)) return;
@@ -699,6 +700,7 @@ function mergeRealStudentsFromCloud(cloudState) {
   cloudState.players.forEach((cp) => {
     if (!cp || !cp.id) return;
     if (cp.isBot) return; // 봇은 선생님이 직접 관리하므로 클라우드에서 재유입 차단
+    if (kickedPlayerIds.has(cp.id)) return; // 퇴장 조치된 학생은 다시 유입되지 않도록 차단
 
     const cleanAvatar = AVATAR_CATALOG[cp.avatar] ? cp.avatar : 'coral_peach';
     const existing = hostPlayersMap[cp.id];
@@ -921,6 +923,7 @@ function broadcastHostState(options = {}) {
     const syncPayload = {
       type: 'host:sync-state',
       state: pubState,
+      kickedIds: Array.from(kickedPlayerIds),
       resetChoices: Boolean(options.resetChoices),
       reviveAll: Boolean(options.reviveAll),
       resetScores: Boolean(options.resetScores),
@@ -1130,6 +1133,7 @@ function hostClearAllBots() {
 
 function hostResetToBeginning() {
   clearHostTimers();
+  kickedPlayerIds.clear();
   gameState.phase = 'LOBBY';
   gameState.questionIndex = 0;
   gameState.currentQuestion = null;
@@ -1151,7 +1155,7 @@ function hostResetToBeginning() {
 
 function hostKickPlayer(playerId) {
   if (!playerId) return;
-  const player = hostPlayersMap[playerId];
+  kickedPlayerIds.add(playerId);
   delete hostPlayersMap[playerId];
 
   if (avatarDomMap.has(playerId)) {
@@ -1159,6 +1163,14 @@ function hostKickPlayer(playerId) {
     if (rec && rec.el) rec.el.remove();
     avatarDomMap.delete(playerId);
   }
+
+  // 무대 및 관람석 DOM에서 즉시 제거
+  document.querySelectorAll(`[data-kick-id="${playerId}"]`).forEach(btn => {
+    const actor = btn.closest('.avatar-actor');
+    if (actor) actor.remove();
+    const chip = btn.closest('.elim-chip');
+    if (chip) chip.remove();
+  });
 
   const kickMsg = { type: 'host:kick-player', playerId };
   if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
@@ -1479,12 +1491,6 @@ function bindStageEvents() {
       renderStudentControllers();
     });
   }
-
-  const stViewNewWinBtn = document.getElementById('studentViewNewWinBtn');
-  if (stViewNewWinBtn) stViewNewWinBtn.addEventListener('click', openNewStudentWindow);
-
-  const stViewBackBtn = document.getElementById('studentViewBackStageBtn');
-  if (stViewBackBtn) stViewBackBtn.addEventListener('click', () => switchView('stage'));
 }
 
 function openNewStudentWindow() {
@@ -1638,7 +1644,10 @@ function renderStageUI() {
   } else {
     elimList.innerHTML = eliminatedPlayers.map(p => {
       const av = getAvatarInfo(p.avatar);
-      return `<span class="elim-chip">${av.iconEmoji} ${escapeHtml(p.name)}<button class="btn-kick-chip" data-kick-id="${escapeHtml(p.id)}" title="${escapeHtml(p.name)} 내보내기">✕</button></span>`;
+      const kickBtnHtml = !isStudentUrlMode
+        ? `<button type="button" class="btn-kick-chip" data-kick-id="${escapeHtml(p.id)}" title="${escapeHtml(p.name)} 내보내기">✕</button>`
+        : '';
+      return `<span class="elim-chip">${av.iconEmoji} ${escapeHtml(p.name)}${kickBtnHtml}</span>`;
     }).join('');
   }
 
@@ -1712,12 +1721,16 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
     el.style.left = `${xPct}%`;
     el.style.top = `${yPct}%`;
 
+    const kickBtnHtml = !isStudentUrlMode
+      ? `<button type="button" class="btn-kick-avatar" data-kick-id="${escapeHtml(player.id)}" title="${escapeHtml(player.name)} 내보내기">✕</button>`
+      : '';
+
     el.innerHTML = `
       <div class="avatar-bubble hidden"></div>
       <div class="avatar-nametag">
         <span class="av-flag">${escapeHtml(player.country || '🌏')}</span>
         <span class="av-name">${escapeHtml(player.name)}</span>
-        <button class="btn-kick-avatar" data-kick-id="${escapeHtml(player.id)}" title="${escapeHtml(player.name)} 내보내기">✕</button>
+        ${kickBtnHtml}
       </div>
       <div class="avatar-creature" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
         <div class="creature-body">
@@ -2036,9 +2049,8 @@ function renderStudentControllers() {
                 </div>
               </div>
             </div>
-            <div style="display:flex; gap:6px;">
+            <div>
               <button type="button" class="btn btn-outline-sm st-edit-profile-btn">이름/국기 수정</button>
-              <button type="button" class="btn btn-subtle btn-sm st-go-stage-btn">🏝️ 광장 무대 보기</button>
             </div>
           </div>
 
@@ -2063,13 +2075,6 @@ function renderStudentControllers() {
         editBtn.addEventListener('click', () => {
           isEditingStudentProfile = true;
           renderStudentControllers();
-        });
-      }
-
-      const goStageBtn = mount.querySelector('.st-go-stage-btn');
-      if (goStageBtn) {
-        goStageBtn.addEventListener('click', () => {
-          switchView('stage');
         });
       }
 
