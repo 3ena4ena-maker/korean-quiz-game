@@ -858,9 +858,9 @@ async function hostTriggerRevealAndDrop() {
         }
       });
       broadcastHostState();
-    }, 1800);
+    }, 900);
     hostBotTimeouts.push(finishDropTimeout);
-  }, 1400);
+  }, 950);
 
   hostBotTimeouts.push(dropTimeout);
 }

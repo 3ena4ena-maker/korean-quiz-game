@@ -581,253 +581,314 @@ body.student-only-mode .nav-menu {
 }
 
 /* =========================================
-   서바이벌 스테이지 & 천국과 지옥 A/B 발판
+   무대: 구름 위의 둥근 3D 플랫폼 (중앙 광장 + 좌우 대칭 A/B 구역)
    ========================================= */
 .stage-sky {
   flex: 1;
-  min-height: 440px;
-  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
-  border-radius: 16px;
+  min-height: 470px;
+  background: radial-gradient(circle at 50% 15%, #eff6ff 0%, #e0f2fe 45%, #f1f5f9 100%);
+  border-radius: 28px;
   position: relative;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e0e7ff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 24px 14px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  padding: 18px 24px 14px;
+  box-shadow: inset 0 2px 14px rgba(255, 255, 255, 0.8), 0 12px 36px rgba(99, 102, 241, 0.06);
+  perspective: 1000px;
 }
 
+/* 둥실둥실 구름 배경 장식 */
 .cloud {
   position: absolute;
-  font-size: 3rem;
-  opacity: 0.35;
+  font-size: 3.5rem;
+  opacity: 0.45;
   pointer-events: none;
   user-select: none;
-  animation: floatCloud 20s ease-in-out infinite alternate;
+  filter: drop-shadow(0 4px 10px rgba(186, 230, 253, 0.5));
+  animation: floatCloud 18s ease-in-out infinite alternate;
 }
-.cloud-1 { top: 14px; left: 6%; animation-duration: 18s; }
-.cloud-2 { top: 40px; right: 9%; font-size: 3.5rem; animation-duration: 24s; }
-.cloud-3 { bottom: 80px; left: 28%; font-size: 2.5rem; animation-duration: 20s; }
-.cloud-4 { top: 20px; left: 52%; font-size: 2.8rem; animation-duration: 26s; }
+.cloud-1 { top: 12px; left: 5%; animation-duration: 16s; }
+.cloud-2 { top: 35px; right: 7%; font-size: 4rem; animation-duration: 22s; }
+.cloud-3 { bottom: 70px; left: 24%; font-size: 2.8rem; animation-duration: 19s; }
+.cloud-4 { top: 18px; left: 50%; font-size: 3.2rem; animation-duration: 24s; }
 
 @keyframes floatCloud {
-  from { transform: translateX(-16px); }
+  from { transform: translateX(-18px); }
   to { transform: translateX(18px); }
 }
 
 .stage-status-banner {
   align-self: center;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.78);
   color: #fff;
-  padding: 6px 18px;
-  border-radius: 20px;
-  font-weight: 500;
+  padding: 6px 20px;
+  border-radius: 99px;
+  font-weight: 600;
   font-size: 0.88rem;
   z-index: 15;
   backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
+/* 3개 구역 3D 플랫폼 컨테이너 (좌우 대칭 구조) */
 .platforms-container {
   position: relative;
   flex: 1;
   display: grid;
-  grid-template-columns: 1.2fr 0.9fr 1.2fr;
-  gap: 16px;
+  grid-template-columns: 1.15fr 0.95fr 1.15fr;
+  gap: 22px;
   align-items: stretch;
-  margin: 10px 0;
+  margin: 14px 0 10px;
   z-index: 5;
 }
 
+/* 구름 위의 둥근 3D 아일랜드 플랫폼 공통 */
 .platform-zone {
   display: flex;
   flex-direction: column;
   position: relative;
+  border-radius: 32px;
+  padding: 8px 10px 14px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  animation: islandFloat 4.2s ease-in-out infinite alternate;
 }
 
+.platform-zone.zone-a {
+  animation-delay: 0s;
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.7) 0%, rgba(219, 234, 254, 0.5) 100%);
+  border: 2px solid #bae6fd;
+  box-shadow: 0 14px 0 #93c5fd, 0 22px 35px rgba(59, 130, 246, 0.16);
+}
+
+.platform-zone.zone-center {
+  animation-delay: 0.7s;
+  background: linear-gradient(180deg, rgba(250, 245, 255, 0.7) 0%, rgba(243, 232, 255, 0.5) 100%);
+  border: 2px solid #ddd6fe;
+  box-shadow: 0 14px 0 #c4b5fd, 0 22px 35px rgba(139, 92, 246, 0.14);
+}
+
+.platform-zone.zone-b {
+  animation-delay: 1.4s;
+  background: linear-gradient(180deg, rgba(255, 241, 242, 0.7) 0%, rgba(254, 226, 226, 0.5) 100%);
+  border: 2px solid #fecdd3;
+  box-shadow: 0 14px 0 #fca5a5, 0 22px 35px rgba(239, 68, 68, 0.16);
+}
+
+@keyframes islandFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-7px); }
+}
+
+/* 플랫폼 상단 플로팅 라운드 캡슐 뱃지 */
 .zone-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 14px;
-  border-radius: 12px 12px 0 0;
+  padding: 6px 14px;
+  border-radius: 99px;
   color: #fff;
   font-weight: 700;
+  margin: 2px auto 8px;
+  width: calc(100% - 16px);
+  max-width: 320px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   z-index: 6;
 }
 
 .zone-a .zone-header {
-  background: #2563eb;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
 }
 
 .zone-center .zone-header {
-  background: #475569;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
 }
 
 .zone-b .zone-header {
-  background: #e11d48;
+  background: linear-gradient(135deg, #f43f5e, #fb7185);
 }
 
 .zone-letter {
-  background: rgba(255, 255, 255, 0.22);
-  padding: 3px 10px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.28);
+  padding: 2px 10px;
+  border-radius: 99px;
   font-family: var(--font-sans);
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .zone-word {
   font-family: var(--font-sans);
-  font-size: 1.25rem;
+  font-size: 1.28rem;
   font-weight: 700;
   letter-spacing: -0.2px;
 }
 
 .zone-count {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 3px 8px;
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 2px 9px;
+  border-radius: 99px;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* 발판 바닥 & 함정 문(Trapdoor) */
+/* 둥근 3D 발판 바닥 */
 .platform-floor {
   flex: 1;
   position: relative;
-  border-radius: 0 0 14px 14px;
+  border-radius: 24px;
   overflow: hidden;
-  min-height: 240px;
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
-  transition: transform 0.25s;
+  min-height: 250px;
+  transition: transform 0.25s ease;
 }
 
 .platform-surface {
   position: absolute;
   inset: 0;
+  border-radius: 24px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 12px;
   z-index: 3;
-  transition: opacity 0.25s, transform 0.4s ease-in;
+  transition: opacity 0.25s, transform 0.35s ease;
 }
 
 .zone-a .platform-surface {
-  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-top: none;
+  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #eff6ff 65%, #dbeafe 100%);
+  border: 1.5px solid rgba(147, 197, 253, 0.6);
 }
 
 .zone-center .platform-surface {
-  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-top: none;
+  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #faf5ff 65%, #ede9fe 100%);
+  border: 1.5px solid rgba(196, 181, 253, 0.6);
   justify-content: space-around;
 }
 
 .zone-b .platform-surface {
-  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  border-top: none;
+  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #fff5f5 65%, #ffe4e6 100%);
+  border: 1.5px solid rgba(254, 205, 211, 0.6);
 }
 
 .zone-signpost {
   font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.85);
+  padding: 3px 12px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.9);
   color: #475569;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   pointer-events: none;
 }
 
 .bridge-arrow {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #64748b;
-  opacity: 0.75;
+  color: #7c3aed;
+  opacity: 0.7;
 }
 
-/* 함정 문 (양쪽으로 열리는 바닥) */
+/* 함정 문 (오답 시 열리는 바닥) */
 .trapdoor-left,
 .trapdoor-right {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 50%;
-  background: repeating-linear-gradient(
-    -45deg,
-    #334155,
-    #334155 14px,
-    #475569 14px,
-    #475569 28px
-  );
+  background: linear-gradient(135deg, #1e293b, #334155);
   z-index: 2;
-  transition: transform 0.55s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  transition: transform 0.45s cubic-bezier(0.6, -0.28, 0.735, 0.045);
 }
 
 .trapdoor-left {
   left: 0;
+  border-radius: 24px 0 0 24px;
   transform-origin: left center;
 }
 
 .trapdoor-right {
   right: 0;
+  border-radius: 0 24px 24px 0;
   transform-origin: right center;
 }
 
-/* 바닥 아래 심연 구덩이 */
+/* 바닥 아래 구름 심연 구덩이 */
 .abyss-pit {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, #0f172a 20%, #020617 95%);
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 50%, #0f172a 20%, #020617 90%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
+  font-weight: 700;
   z-index: 1;
 }
 
-/* 정답 구역 하이라이트 효과 */
+/* =========================================
+   게임 연출: 정답은 빛과 점프, 오답은 코믹한 낙하
+   ========================================= */
+
+/* 1. 정답 구역: 찬란한 빛 발광 연출 */
+.platform-zone.is-correct {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 0 0 0 5px #fde047, 0 0 45px rgba(250, 204, 21, 0.75), 0 16px 0 #eab308 !important;
+  animation: correctGoldGlow 0.7s ease-in-out infinite alternate !important;
+  z-index: 10;
+}
+
 .platform-zone.is-correct .platform-surface {
-  background: radial-gradient(circle at 50% 35%, #ecfdf5, #a7f3d0 85%);
-  border-color: #10b981;
-  box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.45);
+  background: radial-gradient(circle at 50% 30%, #ffffff 0%, #fef9c3 50%, #fef08a 100%) !important;
+  border-color: #facc15 !important;
 }
 
 .platform-zone.is-correct .zone-header {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #eab308, #f59e0b) !important;
 }
 
-/* 오답 확인 시간 (바닥 흔들림 경고) */
+@keyframes correctGoldGlow {
+  0% {
+    box-shadow: 0 0 0 4px #fde047, 0 0 30px rgba(250, 204, 21, 0.6), 0 16px 0 #ca8a04;
+  }
+  100% {
+    box-shadow: 0 0 0 6px #fef08a, 0 0 55px rgba(250, 204, 21, 0.95), 0 18px 0 #ca8a04;
+  }
+}
+
+/* 2. 오답 확인 경고 (바닥 진동) */
 .platform-zone.is-warning .platform-floor {
-  animation: platformShake 0.14s infinite;
+  animation: platformShake 0.12s infinite;
 }
 
 .platform-zone.is-warning .platform-surface {
   background: repeating-linear-gradient(
     45deg,
     #fee2e2,
-    #fee2e2 16px,
-    #fecaca 16px,
-    #fecaca 32px
-  );
-  border-color: #ef4444;
+    #fee2e2 14px,
+    #fecaca 14px,
+    #fecaca 28px
+  ) !important;
+  border-color: #f87171 !important;
 }
 
 @keyframes platformShake {
-  0% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  100% { transform: translateX(-4px); }
+  0% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(-3px); }
 }
 
-/* 오답 바닥이 열릴 때 (DROP 단계) */
+/* 3. 오답 바닥 열림 (DROP 단계) */
+.platform-zone.is-dropped {
+  transform: translateY(6px) !important;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
 .platform-zone.is-dropped .platform-surface {
   opacity: 0;
   transform: scale(0.85);
@@ -835,11 +896,11 @@ body.student-only-mode .nav-menu {
 }
 
 .platform-zone.is-dropped .trapdoor-left {
-  transform: perspective(500px) rotateY(-82deg);
+  transform: perspective(600px) rotateY(-85deg);
 }
 
 .platform-zone.is-dropped .trapdoor-right {
-  transform: perspective(500px) rotateY(82deg);
+  transform: perspective(600px) rotateY(85deg);
 }
 
 /* =========================================
@@ -1049,25 +1110,33 @@ body.student-only-mode .nav-menu {
   to { transform: rotate(35deg); }
 }
 
-/* 🎉 정답 구역에서 환호하는 모션 */
+/* 정답 구역: 높이 펄쩍펄쩍 뛰는 신나는 점프 & 환호 모션 */
 .avatar-actor.is-celebrating .avatar-figure {
-  animation: celebrateJump 0.38s ease-in-out infinite alternate;
+  animation: victoryJoyJump 0.32s ease-in-out infinite alternate;
+}
+
+.avatar-actor.is-celebrating .avatar-head {
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.9));
 }
 
 .avatar-actor.is-celebrating .avatar-arm.left {
-  transform: rotate(145deg);
+  transform: rotate(155deg);
 }
 
 .avatar-actor.is-celebrating .avatar-arm.right {
-  transform: rotate(-145deg);
+  transform: rotate(-155deg);
 }
 
-@keyframes celebrateJump {
-  from { transform: translateY(0) scale(1); }
-  to { transform: translateY(-14px) scale(1.06); }
+@keyframes victoryJoyJump {
+  from {
+    transform: translateY(0) scale(1) rotate(-3deg);
+  }
+  to {
+    transform: translateY(-28px) scale(1.16) rotate(3deg);
+  }
 }
 
-/* 😱 오답 확인 시간! (떨어지기 직전 당황 모션) */
+/* 오답 확인 시간: 떨어지기 직전 당황 모션 */
 .avatar-actor.is-panicking .avatar-figure {
   animation: panicTremble 0.1s infinite;
 }
@@ -1086,10 +1155,10 @@ body.student-only-mode .nav-menu {
   100% { transform: translateX(-3px) rotate(-5deg); }
 }
 
-/* 🕳️ 오답 아바타가 밑으로 떨어져서 사라지는 모션! */
+/* 오답 아바타: 코믹 덤블링 낙하 모션 (0.85초 짧고 명쾌함) */
 .avatar-actor.is-falling {
   pointer-events: none;
-  animation: fallIntoAbyss 1.35s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+  animation: comicTumbleDrop 0.85s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
 }
 
 .avatar-actor.is-falling .avatar-shadow {
@@ -1097,17 +1166,21 @@ body.student-only-mode .nav-menu {
   transform: scale(0.1);
 }
 
-@keyframes fallIntoAbyss {
+@keyframes comicTumbleDrop {
   0% {
     transform: translate(-50%, -50%) translateY(0) rotate(0deg) scale(1);
     opacity: 1;
   }
   20% {
-    transform: translate(-50%, -50%) translateY(-18px) rotate(-12deg) scale(1.05);
+    transform: translate(-50%, -50%) translateY(-26px) rotate(-16deg) scale(1.18);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(-50%, -50%) translateY(20px) rotate(40deg) scale(0.9);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -50%) translateY(360px) rotate(190deg) scale(0.25);
+    transform: translate(-50%, -50%) translateY(320px) rotate(260deg) scale(0.18);
     opacity: 0;
   }
 }
