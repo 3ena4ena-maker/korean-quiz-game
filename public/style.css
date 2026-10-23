@@ -12,12 +12,16 @@
   --primary: #4f46e5;
   --primary-hover: #4338ca;
   --secondary: #0ea5e9;
-  --zone-a: #2563eb;
-  --zone-a-light: #dbeafe;
-  --zone-a-border: #1d4ed8;
-  --zone-b: #e11d48;
-  --zone-b-light: #ffe4e6;
-  --zone-b-border: #be123c;
+  --zone-a: #38bdf8;
+  --zone-a-light: #f0f9ff;
+  --zone-a-border: #bae6fd;
+  --zone-a-shadow: #7dd3fc;
+  --zone-a-text: #0369a1;
+  --zone-b: #fb7185;
+  --zone-b-light: #fff1f2;
+  --zone-b-border: #fecdd3;
+  --zone-b-shadow: #fda4af;
+  --zone-b-text: #be123c;
   --zone-center: #64748b;
   --gold: #f59e0b;
   --success: #10b981;
@@ -575,7 +579,69 @@ body.student-only-mode #view-student-full {
   text-align: center;
   color: #64748b;
   font-size: 0.92rem;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+/* 문제 화면 상단 A / B 파스텔 선택지 안내 바 (학생 리모컨과 100% 동일한 파스텔 톤) */
+.stage-options-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 10px auto 14px;
+}
+
+.stage-opt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 22px 8px 10px;
+  border-radius: 99px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.stage-opt-pill.opt-a {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #bae6fd;
+  color: #0369a1;
+}
+
+.stage-opt-pill.opt-a .opt-letter {
+  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(56, 189, 248, 0.35);
+}
+
+.stage-opt-pill.opt-b {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 2px solid #fecdd3;
+  color: #be123c;
+}
+
+.stage-opt-pill.opt-b .opt-letter {
+  background: linear-gradient(135deg, #fda4af 0%, #fb7185 100%);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(251, 113, 133, 0.35);
 }
 
 .explanation-banner {
@@ -687,550 +753,230 @@ body.student-only-mode #view-student-full {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-/* 3개 구역 3D 플랫폼 컨테이너 (좌우 대칭 구조) */
-.platforms-container {
+/* =========================================
+   3D 천국 부유섬 메인 스테이지 씬 (사용자 3D 그래픽 완벽 적용)
+   ========================================= */
+.heaven-stage-scene {
   position: relative;
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1.15fr 1fr;
-  gap: 22px;
-  align-items: stretch;
-  margin: 18px 0 24px;
-  z-index: 5;
+  width: 100%;
+  max-width: 1060px;
+  margin: 14px auto 20px;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 16px 45px rgba(14, 165, 233, 0.22), 0 0 0 2px rgba(186, 230, 253, 0.6);
+  background: #e0f2fe;
 }
 
-/* 구름 위의 둥근 3D 아일랜드 플랫폼 공통 */
-.platform-zone {
-  display: flex;
-  flex-direction: column;
+.heaven-stage-canvas {
   position: relative;
-  border-radius: 36px;
-  padding: 10px 12px 14px;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-  animation: islandFloat 4.5s ease-in-out infinite alternate;
+  width: 100%;
+  aspect-ratio: 1024 / 576;
+  animation: heavenFloat 5s ease-in-out infinite alternate;
 }
 
-/* A 플랫폼 (맑은 하늘색) */
-.platform-zone.zone-a {
-  animation-delay: 0s;
-  background: #f0f9ff;
-  border: 2px solid #bae6fd;
-  box-shadow: 0 12px 0 #7dd3fc, 0 20px 30px rgba(14, 165, 233, 0.15);
+.heaven-stage-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
 }
 
-/* 가운데 시작 광장 (구름 위의 둥근 3D 부유섬: 잔디·나무·바위) */
-.platform-zone.zone-center {
-  animation-delay: 0.8s;
-  background: #f4fbe8;
-  border: 2px solid #cce899;
-  border-radius: 42px;
-  box-shadow: 0 14px 0 #a5d365, 0 24px 35px rgba(101, 163, 13, 0.18);
-}
-
-/* B 플랫폼 (맑은 파란색 계열) */
-.platform-zone.zone-b {
-  animation-delay: 1.6s;
-  background: #eff6ff;
-  border: 2px solid #bfdbfe;
-  box-shadow: 0 12px 0 #93c5fd, 0 20px 30px rgba(37, 99, 235, 0.15);
-}
-
-@keyframes islandFloat {
+/* 부드러운 천국 부유섬 웨이브 애니메이션 */
+@keyframes heavenFloat {
   0% { transform: translateY(0px); }
-  100% { transform: translateY(-8px); }
+  50% { transform: translateY(-7px); }
+  100% { transform: translateY(0px); }
 }
 
-/* =========================================
-   시작 광장 상단 자연 풍경 데코 (파스텔 몽실 나무 & 둥근 바위)
-   ========================================= */
-.island-scenery {
+/* 게이트 표지판 앵커 박스 (A, B 게이트 및 중앙 대광장) */
+.heaven-gate-box {
   position: absolute;
-  top: -46px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 0 14px;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* 몽실몽실 파스텔 볼 나무 */
-.island-tree {
-  position: relative;
-  width: 48px;
-  height: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-}
-
-.tree-trunk {
-  width: 8px;
-  height: 18px;
-  background: #966b44;
-  border-radius: 4px;
-  box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.2);
-  transform: rotate(3deg);
-}
-
-.tree-canopy {
-  position: absolute;
-  border-radius: 50%;
-  box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.12),
-              inset 2px 2px 4px rgba(255, 255, 255, 0.65),
-              0 3px 6px rgba(0, 0, 0, 0.08);
-}
-
-.tree-left .canopy-1 {
-  width: 28px;
-  height: 28px;
-  background: radial-gradient(circle at 35% 35%, #e0f8ce 0%, #b4d8b8 70%, #87be9a 100%);
-  top: 6px;
-  left: 10px;
-  z-index: 2;
-}
-.tree-left .canopy-2 {
-  width: 22px;
-  height: 22px;
-  background: radial-gradient(circle at 35% 35%, #c8eddf 0%, #8ec5ba 70%, #68a79b 100%);
-  top: 18px;
-  left: 2px;
-  z-index: 3;
-}
-.tree-left .canopy-3 {
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle at 35% 35%, #ebf9d8 0%, #bde2c4 70%, #9bc4a3 100%);
-  top: 16px;
-  right: 3px;
-  z-index: 1;
-}
-
-.tree-right .canopy-1 {
-  width: 28px;
-  height: 28px;
-  background: radial-gradient(circle at 35% 35%, #e2fbd4 0%, #aedaa5 70%, #83c076 100%);
-  top: 8px;
-  right: 10px;
-  z-index: 2;
-}
-.tree-right .canopy-2 {
-  width: 24px;
-  height: 24px;
-  background: radial-gradient(circle at 35% 35%, #d5f4eb 0%, #94cdc5 70%, #6db3a9 100%);
-  top: 18px;
-  right: 0px;
-  z-index: 3;
-}
-
-/* 둥근 로우폴리 바위 무리 */
-.island-rocks {
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  margin-bottom: 2px;
-}
-
-.island-rock {
-  border-radius: 12px 12px 4px 4px;
-  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.7),
-              0 3px 6px rgba(0, 0, 0, 0.1);
-}
-
-.rock-1 {
-  width: 20px;
-  height: 26px;
-  background: linear-gradient(135deg, #d8d3ca 0%, #b8b2a7 60%, #9a9489 100%);
-  clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
-}
-
-.rock-2 {
-  width: 26px;
-  height: 34px;
-  background: linear-gradient(135deg, #e4dfd6 0%, #c4beb3 60%, #a49e93 100%);
-  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-  margin: 0 -2px;
-}
-
-.rock-3 {
-  width: 18px;
-  height: 20px;
-  background: linear-gradient(135deg, #ccc7be 0%, #aba59a 60%, #8e887d 100%);
-  clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
-}
-
-/* =========================================
-   부유섬 하단 3D 원뿔형 암석 & 구름 받침 (참고 이미지 완벽 재현)
-   ========================================= */
-.island-rock-cone {
-  position: absolute;
-  top: calc(100% - 4px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 82%;
-  height: 68px;
-  display: flex;
-  justify-content: center;
-  z-index: 1;
+  z-index: 10;
   pointer-events: none;
 }
 
-.rock-facet-left {
-  flex: 1;
-  height: 100%;
-  background: linear-gradient(180deg, #b8b2a8 0%, #8c857b 60%, #686259 100%);
-  clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 35% 100%);
+/* A 게이트: 파스텔 하늘색 (정답 보기 A 실시간 표시) */
+.heaven-gate-box.gate-a {
+  left: 11.2%;
+  top: 35.8%;
+  transform: translate(-50%, -50%);
+  animation: gateWaveA 4s ease-in-out infinite alternate;
 }
 
-.rock-facet-mid {
-  flex: 1.4;
-  height: 100%;
-  background: linear-gradient(180deg, #c7c1b8 0%, #9e978c 60%, #756f65 100%);
-  clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%);
+/* B 게이트: 파스텔 코랄 핑크 (정답 보기 B 실시간 표시) */
+.heaven-gate-box.gate-b {
+  left: 86.4%;
+  top: 35.8%;
+  transform: translate(-50%, -50%);
+  animation: gateWaveB 4s ease-in-out infinite alternate;
 }
 
-.rock-facet-right {
-  flex: 1;
-  height: 100%;
-  background: linear-gradient(180deg, #9e978d 0%, #766f65 60%, #524d45 100%);
-  clip-path: polygon(0% 0%, 90% 0%, 65% 100%, 0% 100%);
-}
-
-.bottom-cloud-cushion {
-  position: absolute;
-  bottom: -16px;
+/* 중앙 대광장 */
+.heaven-gate-box.gate-center {
   left: 50%;
-  transform: translateX(-50%);
-  width: 140px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 15%;
+  transform: translate(-50%, -50%);
 }
 
-.cushion-puff {
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: inset 0 -3px 6px rgba(148, 163, 184, 0.25), 0 4px 10px rgba(100, 116, 139, 0.15);
-  position: absolute;
-}
-.cushion-puff.puff-1 { width: 55px; height: 32px; left: 10px; }
-.cushion-puff.puff-2 { width: 68px; height: 38px; left: 36px; z-index: 2; }
-.cushion-puff.puff-3 { width: 50px; height: 30px; right: 10px; }
-
-/* 플랫폼 상단 표지판 */
-.zone-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  border-radius: 99px;
-  color: #fff;
-  font-weight: 700;
-  margin: 4px auto 8px;
-  width: calc(100% - 12px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  z-index: 6;
+@keyframes gateWaveA {
+  0% { transform: translate(-50%, -50%) translateY(0px); }
+  50% { transform: translate(-50%, -50%) translateY(-5px); }
+  100% { transform: translate(-50%, -50%) translateY(0px); }
 }
 
-.zone-a .zone-header {
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
+@keyframes gateWaveB {
+  0% { transform: translate(-50%, -50%) translateY(-5px); }
+  50% { transform: translate(-50%, -50%) translateY(0px); }
+  100% { transform: translate(-50%, -50%) translateY(-5px); }
 }
 
-.zone-center .zone-header {
-  background: linear-gradient(135deg, #4d7c0f, #65a30d);
-  justify-content: center;
-  gap: 12px;
-}
-
-.zone-b .zone-header {
-  background: linear-gradient(135deg, #1d4ed8, #60a5fa);
-}
-
-/* 큼직한 A, B 표지판 원형 엠블럼 */
-.zone-letter {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #ffffff;
+/* 게이트 안의 선택지 단어 알약 배지 */
+.gate-sign-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-family: var(--font-sans);
-  font-size: 1.45rem;
   font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-.zone-a .zone-letter {
-  color: #0284c7;
-}
-
-.zone-b .zone-letter {
-  color: #1d4ed8;
-}
-
-/* 선택지 보기 단어 */
-.zone-word {
-  font-family: var(--font-sans);
-  font-size: 1.4rem;
-  font-weight: 800;
+  font-size: 0.88rem;
   letter-spacing: -0.3px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.zone-count {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 3px 10px;
+.gate-sign-pill.sign-a {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #ffffff;
+  border: 1px solid #7dd3fc;
+}
+
+.gate-sign-pill.sign-b {
+  background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+  color: #ffffff;
+  border: 1px solid #fda4af;
+}
+
+.gate-count-badge {
+  margin-top: 3px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 1px 7px;
   border-radius: 99px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* 둥근 3D 발판 바닥 */
-.platform-floor {
-  flex: 1;
-  position: relative;
-  border-radius: 26px;
-  overflow: hidden;
-  min-height: 250px;
-  transition: transform 0.25s ease;
-}
-
-.platform-surface {
-  position: absolute;
-  inset: 0;
-  border-radius: 26px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 14px;
-  z-index: 3;
-  transition: opacity 0.25s, transform 0.35s ease;
-}
-
-.zone-a .platform-surface {
-  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #f0f9ff 65%, #e0f2fe 100%);
-  border: 1.5px solid #bae6fd;
-}
-
-.zone-center .platform-surface {
-  background: transparent;
-  border: none;
-}
-
-/* 부유섬 상단 잔디 대지 & 흙길 & 시냇물 */
-.island-ground {
-  position: absolute;
-  inset: 0;
-  border-radius: 26px;
-  overflow: hidden;
-  background: radial-gradient(ellipse at 50% 25%, #e2f4be 0%, #cde897 55%, #b2d776 100%);
-  border: 2.5px solid #9dc75c;
-  box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.7),
-              inset 0 -6px 12px rgba(90, 130, 40, 0.25);
-}
-
-.island-path {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 36%;
-  width: 28%;
-  background: radial-gradient(ellipse at 50% 50%, #deb887 0%, #c49a6c 65%, #a87f52 100%);
-  opacity: 0.82;
-  border-radius: 40px;
-  transform: rotate(-3deg);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
-.island-stream {
-  position: absolute;
-  bottom: -4px;
-  left: 42%;
-  width: 26px;
-  height: 22px;
-  background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%);
-  border-radius: 8px 8px 14px 14px;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 3px 6px rgba(14, 165, 233, 0.3);
-}
-
-.zone-b .platform-surface {
-  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #eff6ff 65%, #dbeafe 100%);
-  border: 1.5px solid #bfdbfe;
-}
-
-/* 시작 광장 중앙 원형 문양 및 출발선 디자인 */
-.plaza-pattern {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0.95;
-}
-
-.plaza-circle {
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  border: 2px dashed #4d7c0f;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(240, 253, 244, 0.5) 70%, transparent 100%);
-  box-shadow: inset 0 0 14px rgba(77, 124, 15, 0.15);
-}
-
-.plaza-inner-circle {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 1.5px solid #65a30d;
-}
-
-.start-line {
-  position: absolute;
-  bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.center-count-pill {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
   font-size: 0.82rem;
   font-weight: 800;
-  color: #3f6212;
-  letter-spacing: 1px;
+  padding: 4px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
-.line-dash {
-  width: 24px;
-  height: 2.5px;
-  background: #65a30d;
-  border-radius: 2px;
-}
-
-.line-text {
-  background: rgba(255, 255, 255, 0.85);
-  padding: 1px 8px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-/* 함정 문 (오답 시 열리는 바닥) */
-.trapdoor-left,
-.trapdoor-right {
+/* 3D 발판 오라 & 탈락 인터랙션 */
+.heaven-zone-pad {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  background: linear-gradient(135deg, #1e293b, #334155);
-  z-index: 2;
-  transition: transform 0.45s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-}
-
-.trapdoor-left {
-  left: 0;
-  border-radius: 24px 0 0 24px;
-  transform-origin: left center;
-}
-
-.trapdoor-right {
-  right: 0;
-  border-radius: 0 24px 24px 0;
-  transform-origin: right center;
-}
-
-/* 바닥 아래 구름 심연 구덩이 */
-.abyss-pit {
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  background: radial-gradient(circle at 50% 50%, #0f172a 20%, #020617 90%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  font-family: var(--font-sans);
-  font-size: 1.2rem;
-  font-weight: 700;
-  z-index: 1;
-}
-
-/* =========================================
-   게임 연출: 정답은 빛과 점프, 오답은 코믹한 낙하
-   ========================================= */
-
-/* 1. 정답 구역: 찬란한 빛 발광 연출 */
-.platform-zone.is-correct {
-  transform: translateY(-8px) scale(1.02) !important;
-  box-shadow: 0 0 0 5px #fde047, 0 0 45px rgba(250, 204, 21, 0.75), 0 16px 0 #eab308 !important;
-  animation: correctGoldGlow 0.7s ease-in-out infinite alternate !important;
-  z-index: 10;
-}
-
-.platform-zone.is-correct .platform-surface {
-  background: radial-gradient(circle at 50% 30%, #ffffff 0%, #fef9c3 50%, #fef08a 100%) !important;
-  border-color: #facc15 !important;
-}
-
-.platform-zone.is-correct .zone-header {
-  background: linear-gradient(135deg, #eab308, #f59e0b) !important;
-}
-
-@keyframes correctGoldGlow {
-  0% {
-    box-shadow: 0 0 0 4px #fde047, 0 0 30px rgba(250, 204, 21, 0.6), 0 16px 0 #ca8a04;
-  }
-  100% {
-    box-shadow: 0 0 0 6px #fef08a, 0 0 55px rgba(250, 204, 21, 0.95), 0 18px 0 #ca8a04;
-  }
-}
-
-/* 2. 오답 확인 경고 (바닥 진동) */
-.platform-zone.is-warning .platform-floor {
-  animation: platformShake 0.12s infinite;
-}
-
-.platform-zone.is-warning .platform-surface {
-  background: repeating-linear-gradient(
-    45deg,
-    #fee2e2,
-    #fee2e2 14px,
-    #fecaca 14px,
-    #fecaca 28px
-  ) !important;
-  border-color: #f87171 !important;
-}
-
-@keyframes platformShake {
-  0% { transform: translateX(-3px); }
-  50% { transform: translateX(3px); }
-  100% { transform: translateX(-3px); }
-}
-
-/* 3. 오답 바닥 열림 (DROP 단계) */
-.platform-zone.is-dropped {
-  transform: translateY(6px) !important;
-  box-shadow: 0 6px 0 #94a3b8, 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-}
-
-.platform-zone.is-dropped .platform-surface {
-  opacity: 0;
-  transform: scale(0.85);
+  border-radius: 50%;
   pointer-events: none;
+  z-index: 4;
+  transition: opacity 0.3s ease, transform 0.4s ease;
 }
 
-.platform-zone.is-dropped .trapdoor-left {
-  transform: perspective(600px) rotateY(-85deg);
+.heaven-zone-pad.pad-a {
+  left: 14%;
+  top: 54%;
+  width: 14%;
+  height: 13%;
+  transform: translate(-50%, -50%);
+  border: 2px dashed rgba(56, 189, 248, 0.6);
+  background: radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+  animation: padWaveA 4s ease-in-out infinite alternate;
 }
 
-.platform-zone.is-dropped .trapdoor-right {
-  transform: perspective(600px) rotateY(85deg);
+.heaven-zone-pad.pad-b {
+  left: 86%;
+  top: 54%;
+  width: 14%;
+  height: 13%;
+  transform: translate(-50%, -50%);
+  border: 2px dashed rgba(251, 113, 133, 0.6);
+  background: radial-gradient(ellipse at 50% 50%, rgba(251, 113, 133, 0.2) 0%, transparent 70%);
+  animation: padWaveB 4s ease-in-out infinite alternate;
 }
+
+.heaven-zone-pad.pad-center {
+  left: 50%;
+  top: 58%;
+  width: 38%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes padWaveA {
+  0% { transform: translate(-50%, -50%) scale(1) translateY(0px); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.05) translateY(-4px); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1) translateY(0px); opacity: 0.7; }
+}
+
+@keyframes padWaveB {
+  0% { transform: translate(-50%, -50%) scale(1) translateY(-4px); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.05) translateY(0px); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1) translateY(-4px); opacity: 0.7; }
+}
+
+/* 정답/오답 상태 시각 효과 */
+.heaven-zone-pad.is-correct {
+  border-color: #10b981;
+  background: radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.45) 0%, transparent 75%);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+}
+
+.heaven-zone-pad.is-warning {
+  border-color: #ef4444;
+  background: radial-gradient(ellipse at 50% 50%, rgba(239, 68, 68, 0.45) 0%, transparent 75%);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+  animation: padDangerShake 0.4s ease-in-out infinite alternate;
+}
+
+.heaven-zone-pad.is-dropped {
+  animation: padFallAway 1.2s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+}
+
+@keyframes padDangerShake {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes padFallAway {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.3) translateY(160px); opacity: 0; }
+}
+
+
+
+
+
+
+
+
 
 /* =========================================
    귀여운 캐릭터 아바타 레이어 & 모션
@@ -1246,7 +992,7 @@ body.student-only-mode #view-student-full {
   position: absolute;
   width: 74px;
   height: 98px;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -85%);
   transition: left 0.68s cubic-bezier(0.22, 1, 0.36, 1),
               top 0.68s cubic-bezier(0.22, 1, 0.36, 1),
               opacity 0.4s ease;
@@ -1282,20 +1028,11 @@ body.student-only-mode #view-student-full {
   gap: 3px;
 }
 
-/* 말풍선 (이모트 / 비명 / 환호) */
-.avatar-bubble {
-  position: absolute;
-  top: -28px;
-  background: #fff;
-  color: #0f172a;
-  font-weight: 800;
-  font-size: 0.74rem;
-  padding: 3px 9px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
-  white-space: nowrap;
-  animation: popBubble 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 30;
+/* 말풍선 및 국기 배지 (사용자 요청으로 완전 비활성화 및 숨김) */
+.avatar-bubble,
+.av-flag,
+.st-emote-row {
+  display: none !important;
 }
 
 .avatar-bubble::after {
@@ -2439,76 +2176,72 @@ body.student-only-mode .student-view-bar {
 .st-ab-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
+  margin: 12px 0 8px;
 }
 
 .st-choice-btn {
   border: none;
-  border-radius: 14px;
-  padding: 20px 14px;
+  border-radius: 18px;
+  padding: 24px 10px;
   color: #fff;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  justify-content: center;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   outline: none;
+  min-height: 125px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
 }
 
 .st-choice-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 .st-choice-btn.btn-a {
-  background: #2563eb;
+  background: linear-gradient(145deg, #7dd3fc 0%, #38bdf8 100%);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);
+  border: 2px solid #bae6fd;
 }
 
 .st-choice-btn.btn-b {
-  background: #e11d48;
+  background: linear-gradient(145deg, #fda4af 0%, #fb7185 100%);
+  box-shadow: 0 8px 24px rgba(251, 113, 133, 0.35);
+  border: 2px solid #fecdd3;
 }
 
-.st-choice-btn.selected {
-  box-shadow: 0 0 0 3px #ffffff, 0 0 0 6px #6366f1;
+.st-choice-btn.btn-a.selected {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px #38bdf8, 0 14px 28px rgba(56, 189, 248, 0.45);
+}
+
+.st-choice-btn.btn-b.selected {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px #fb7185, 0 14px 28px rgba(251, 113, 133, 0.45);
 }
 
 .st-choice-letter {
-  font-size: 1.8rem;
-  font-weight: 800;
-  background: rgba(255, 255, 255, 0.2);
-  width: 44px;
-  height: 44px;
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+  background: #ffffff;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
-.st-choice-word {
-  font-size: 1.25rem;
-  font-weight: 700;
-  word-break: keep-all;
+.st-choice-btn.btn-a .st-choice-letter {
+  color: #0284c7;
 }
 
-.st-emote-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.st-emote-btn {
-  flex: 1;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  border-radius: 10px;
-  padding: 7px 4px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.st-emote-btn:hover {
-  background: #f1f5f9;
+.st-choice-btn.btn-b .st-choice-letter {
+  color: #e11d48;
 }
 
 /* =========================================
@@ -2657,27 +2390,12 @@ body.student-only-mode .student-view-bar {
   gap: 10px;
 }
 
-.toast-container {
-  position: fixed;
-  top: 66px;
-  right: 24px;
-  z-index: 120;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  pointer-events: none;
-}
-
+.toast-container,
 .toast {
-  background: rgba(30, 27, 75, 0.92);
-  backdrop-filter: blur(6px);
-  color: #fff;
-  padding: 9px 18px;
-  border-radius: 99px;
-  font-weight: 700;
-  font-size: 0.86rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* 학생 화면 내 3D 아바타 대형 미리보기 무대 */

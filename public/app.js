@@ -175,14 +175,12 @@ function renderCreatureThumb(key) {
   `;
 }
 
-function renderLargeCreaturePreview(key, name, country, emoteText = '') {
+function renderLargeCreaturePreview(key, name) {
   const av = getAvatarInfo(key);
   return `
     <div class="st-creature-stage">
       <div class="st-creature-actor">
-        ${emoteText ? `<div class="avatar-bubble">${escapeHtml(emoteText)}</div>` : ''}
         <div class="avatar-nametag">
-          <span class="av-flag">${escapeHtml(country || '🇰🇷')}</span>
           <span class="av-name">${escapeHtml(name || '학생')}</span>
         </div>
         <div class="avatar-creature st-large-creature" style="--creature-bg: ${av.bodyBg}; --creature-arm: ${av.armBg}; --creature-leg: ${av.legBg};">
@@ -1594,6 +1592,11 @@ function renderStageUI() {
   zoneAWord.textContent = q ? q.optionA : '선택지 A';
   zoneBWord.textContent = q ? q.optionB : '선택지 B';
 
+  const boardOptA = document.getElementById('boardOptionA');
+  const boardOptB = document.getElementById('boardOptionB');
+  if (boardOptA) boardOptA.textContent = q ? q.optionA : '선택지 A';
+  if (boardOptB) boardOptB.textContent = q ? q.optionB : '선택지 B';
+
   const countA = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'A').length;
   const countB = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'B').length;
   const countCenter = alivePlayers.filter(p => {
@@ -1603,7 +1606,7 @@ function renderStageUI() {
 
   document.getElementById('zoneACount').textContent = `${countA}명`;
   document.getElementById('zoneBCount').textContent = `${countB}명`;
-  document.getElementById('zoneCenterCount').textContent = `${countCenter}명`;
+  document.getElementById('zoneCenterCount').textContent = `대광장 ${countCenter}명 대기 중`;
 
   const platformA = document.getElementById('platformA');
   const platformB = document.getElementById('platformB');
@@ -1694,24 +1697,30 @@ function renderAvatarsOnStage() {
 }
 
 function computeAvatarPosition(zoneKey, index, totalInZone) {
-  let minX = 37, maxX = 63;
+  let minX = 38, maxX = 62;
+  let minY = 48, maxY = 68;
   let cols = 4;
-  if (zoneKey === 'A') { minX = 6; maxX = 27; cols = 3; }
-  if (zoneKey === 'B') { minX = 73; maxX = 94; cols = 3; }
+  if (zoneKey === 'A') { minX = 9; maxX = 19; minY = 49; maxY = 59; cols = 3; }
+  if (zoneKey === 'B') { minX = 81; maxX = 91; minY = 49; maxY = 59; cols = 3; }
 
   const row = Math.floor(index / cols);
   const col = index % cols;
   const itemsInThisRow = Math.min(cols, totalInZone - row * cols);
 
   const spanX = maxX - minX;
-  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow + 0.25) : 0;
+  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow - 0.75) : 0;
   const centerX = (minX + maxX) / 2;
   const offsetX = itemsInThisRow > 1
     ? (col - (itemsInThisRow - 1) / 2) * stepX
     : 0;
 
+  const maxRows = Math.max(1, Math.ceil(totalInZone / cols));
+  const spanY = maxY - minY;
+  const stepY = maxRows > 1 ? spanY / (maxRows - 0.5) : 0;
+  const offsetY = maxRows > 1 ? row * stepY : (spanY / 2);
+
   const xPct = centerX + offsetX;
-  const yPct = Math.min(82, 42 + row * 18);
+  const yPct = minY + offsetY;
 
   return { xPct, yPct };
 }
@@ -1731,9 +1740,7 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
       : '';
 
     el.innerHTML = `
-      <div class="avatar-bubble hidden"></div>
       <div class="avatar-nametag">
-        <span class="av-flag">${escapeHtml(player.country || '🌏')}</span>
         <span class="av-name">${escapeHtml(player.name)}</span>
         ${kickBtnHtml}
       </div>
@@ -1773,8 +1780,8 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
 
   el.classList.toggle('is-me', player.id === myStudentProfile.playerId);
 
-  el.querySelector('.av-flag').textContent = player.country || '🌏';
-  el.querySelector('.av-name').textContent = player.name;
+  const nameEl = el.querySelector('.av-name');
+  if (nameEl) nameEl.textContent = player.name;
 
   if (record.lastChoice !== player.choice) {
     record.lastChoice = player.choice;
@@ -1793,35 +1800,21 @@ function updateOrCreateAvatarDom(layer, player, { xPct, yPct }) {
   const qAns = q ? String(q.answer || 'A').toUpperCase().trim() : '';
   const pChoice = String(player.choice || '').toUpperCase().trim();
   const isRightAnswer = Boolean(q && pChoice && pChoice === qAns);
-  const bubbleEl = el.querySelector('.avatar-bubble');
 
   el.classList.remove('is-celebrating', 'is-panicking', 'is-falling');
-
-  let bubbleText = player.emote || '';
 
   if (gameState.phase === 'REVEAL' && q) {
     if (isRightAnswer) {
       el.classList.add('is-celebrating');
-      bubbleText = '정답! ✨';
     } else {
       el.classList.add('is-panicking');
-      bubbleText = player.choice === 'CENTER' ? '시간 초과?! 💦' : '앗! 오답?! 💦';
     }
   } else if (gameState.phase === 'DROP' && q) {
     if (isRightAnswer) {
       el.classList.add('is-celebrating');
-      bubbleText = '살았다! 🎉';
     } else if (player.falling) {
       el.classList.add('is-falling');
-      bubbleText = '으아아악~!! 💦';
     }
-  }
-
-  if (bubbleText) {
-    bubbleEl.textContent = bubbleText;
-    bubbleEl.classList.remove('hidden');
-  } else {
-    bubbleEl.classList.add('hidden');
   }
 }
 
@@ -1849,7 +1842,7 @@ function renderWinnerPodium() {
       <div class="winner-hero">
         <div class="winner-hero-crown">👑</div>
         <div class="winner-hero-creature">${renderCreatureThumb(w.avatar)}</div>
-        <div class="winner-hero-name">${escapeHtml(w.country || '')} ${escapeHtml(w.name)}</div>
+        <div class="winner-hero-name">${escapeHtml(w.name)}</div>
         <div class="winner-hero-score">정답 ${w.score || 0}회 성공!</div>
       </div>
     `;
@@ -1891,20 +1884,10 @@ function renderStudentControllers() {
           <h3 style="text-align:center; font-family:var(--font-display); font-size:1.35rem; color:#1e1b4b;">
             🐾 내 귀여운 3D 아바타 만들기
           </h3>
-          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name, myStudentProfile.country, '만나서 반가워요! 👋')}
+          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name)}
           <div class="field-group">
             <label>이름 (학생 이름 / 별명)</label>
             <input type="text" class="field-input st-name-input" value="${escapeHtml(myStudentProfile.name)}" maxlength="12" placeholder="이름을 입력하세요" />
-          </div>
-          <div class="field-group">
-            <label>국기 배지 선택</label>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${COUNTRY_LIST.map(flag => `
-                <button type="button" class="btn-outline-sm st-flag-btn" data-flag="${flag}" style="font-size:1.1rem; padding:4px 8px; ${myStudentProfile.country === flag ? 'border-color:#4f46e5; background:#eef2ff;' : ''}">
-                  ${flag}
-                </button>
-              `).join('')}
-            </div>
           </div>
           <div class="field-group">
             <label>캐릭터 선택 (15가지 귀여운 점토 생명체)</label>
@@ -1933,17 +1916,6 @@ function renderStudentControllers() {
         });
       }
 
-      mount.querySelectorAll('.st-flag-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const inputEl = mount.querySelector('.st-name-input');
-          if (inputEl && inputEl.value.trim()) myStudentProfile.name = inputEl.value.trim();
-          myStudentProfile.country = btn.dataset.flag;
-          saveMyStudentProfile();
-          postStudentJoinToCloud();
-          renderStudentControllers();
-        });
-      });
-
       mount.querySelectorAll('.avatar-pick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const inputEl = mount.querySelector('.st-name-input');
@@ -1971,8 +1943,7 @@ function renderStudentControllers() {
     // 2. 게임 진행 컨트롤러 모드
     const activeChoice = myLocalChoice || (meOnServer ? meOnServer.choice : 'CENTER');
     const isAlive = meOnServer ? meOnServer.alive : true;
-    const myEmote = meOnServer && meOnServer.emote ? meOnServer.emote : '';
-    const currentQKey = `${q ? q.id : 'noq'}_${gameState.phase}_${isAlive}_${myStudentProfile.avatar}_${myStudentProfile.name}_${myStudentProfile.country}_${myEmote}_${playersArr.length}`;
+    const currentQKey = `${q ? q.id : 'noq'}_${gameState.phase}_${isAlive}_${myStudentProfile.avatar}_${myStudentProfile.name}_${playersArr.length}`;
 
     if (mount.dataset.lastQKey !== currentQKey) {
       mount.dataset.lastQKey = currentQKey;
@@ -2007,23 +1978,21 @@ function renderStudentControllers() {
       } else if (gameState.phase === 'QUESTION' && q) {
         centerContentHtml = `
           <div class="st-question-prompt">
-            <div class="st-timer-display" style="font-size:0.86rem; color:#4f46e5; margin-bottom:4px; font-weight:700;">
-              남은 시간: <span class="st-timer-val">${Number(gameState.timeRemaining).toFixed(1)}</span>초
+            <div class="st-timer-display" style="font-size:0.92rem; color:#4f46e5; margin-bottom:3px; font-weight:800;">
+              ⏱️ 남은 시간: <span class="st-timer-val">${Number(gameState.timeRemaining).toFixed(1)}</span>초
             </div>
-            <div class="st-sentence-val">${escapeHtml(q.sentence)}</div>
+            <div style="font-size:0.84rem; color:#64748b; font-weight:600;">선생님 화면의 문제를 보고 A 또는 B를 누르세요!</div>
           </div>
           <div class="st-ab-buttons">
-            <button type="button" class="st-choice-btn btn-a ${activeChoice === 'A' ? 'selected' : ''}" data-choice="A">
+            <button type="button" class="st-choice-btn btn-a ${activeChoice === 'A' ? 'selected' : ''}" data-choice="A" aria-label="A 구역 선택">
               <span class="st-choice-letter">A</span>
-              <span class="st-choice-word">${escapeHtml(q.optionA)}</span>
             </button>
-            <button type="button" class="st-choice-btn btn-b ${activeChoice === 'B' ? 'selected' : ''}" data-choice="B">
+            <button type="button" class="st-choice-btn btn-b ${activeChoice === 'B' ? 'selected' : ''}" data-choice="B" aria-label="B 구역 선택">
               <span class="st-choice-letter">B</span>
-              <span class="st-choice-word">${escapeHtml(q.optionB)}</span>
             </button>
           </div>
-          <p class="st-choice-guide" style="text-align:center; font-size:0.82rem; color:#64748b; font-weight:600;">
-            ${activeChoice === 'CENTER' ? '버튼을 누르면 아바타가 선택한 구역으로 달려갑니다.' : `🏃 현재 [${activeChoice}] 구역 앞에 서 있습니다!`}
+          <p class="st-choice-guide" style="text-align:center; font-size:0.88rem; color:#334155; font-weight:700;">
+            ${activeChoice === 'CENTER' ? 'A 또는 B 버튼을 눌러 정답 구역으로 이동하세요.' : `🏃 [${activeChoice}] 구역 선택 완료!`}
           </p>
         `;
       } else if ((gameState.phase === 'REVEAL' || gameState.phase === 'DROP') && q) {
@@ -2031,7 +2000,7 @@ function renderStudentControllers() {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:${wonRound ? '#ecfdf5' : '#fef2f2'}; color:${wonRound ? '#047857' : '#b91c1c'};">
             ${wonRound ? '🎉 정답입니다! 살아남았습니다!' : '💦 오답 구역입니다!'}
-            <div style="margin-top:6px; font-size:0.86rem; color:#334155;">정답: <strong>${q.answer}. ${escapeHtml(q.answer === 'A' ? q.optionA : q.optionB)}</strong></div>
+            <div style="margin-top:6px; font-size:0.95rem; color:#334155;">정답: <strong>[ ${q.answer} ]</strong> 구역</div>
           </div>
         `;
       } else if (gameState.phase === 'WINNER') {
@@ -2048,30 +2017,20 @@ function renderStudentControllers() {
             <div class="st-me-info">
               <div class="st-me-thumb">${renderCreatureThumb(myStudentProfile.avatar)}</div>
               <div>
-                <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)} <span style="font-size:0.78rem; color:#6366f1;">(${av.label})</span></div>
+                <div class="st-me-name">${escapeHtml(myStudentProfile.name)} <span style="font-size:0.78rem; color:#6366f1;">(${av.label})</span></div>
                 <div class="st-me-status" style="color:${isAlive ? '#059669' : '#e11d48'};">
                   ${isAlive ? '🌟 생존 중' : '☁️ 탈락 (다음 문제에 부활)'} · 누적 ${meOnServer ? meOnServer.score : 0}점
                 </div>
               </div>
             </div>
             <div>
-              <button type="button" class="btn btn-outline-sm st-edit-profile-btn">이름/국기 수정</button>
+              <button type="button" class="btn btn-outline-sm st-edit-profile-btn">이름 수정</button>
             </div>
           </div>
 
-          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name, myStudentProfile.country, myEmote)}
+          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name)}
 
           <div class="st-dynamic-content">${centerContentHtml}</div>
-
-          <div class="field-group">
-            <label>💬 내 아바타 머리 위 말풍선 보내기</label>
-            <div class="st-emote-row">
-              <button type="button" class="st-emote-btn" data-emote="안녕하세요! 👋">안녕👋</button>
-              <button type="button" class="st-emote-btn" data-emote="자신 있어요! ✨">자신있어✨</button>
-              <button type="button" class="st-emote-btn" data-emote="헷갈려요 💦">헷갈려💦</button>
-              <button type="button" class="st-emote-btn" data-emote="한국어 최고! ❤️">최고❤️</button>
-            </div>
-          </div>
         </div>
       `;
 
@@ -2109,18 +2068,6 @@ function renderStudentControllers() {
             payload: {
               playerId: myStudentProfile.playerId,
               choice
-            }
-          });
-        });
-      });
-
-      mount.querySelectorAll('.st-emote-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          sendStudentAction({
-            type: 'student:emote',
-            payload: {
-              playerId: myStudentProfile.playerId,
-              emote: btn.dataset.emote
             }
           });
         });
@@ -2456,7 +2403,9 @@ function bindModalEvents() {
       const input = document.getElementById('studentLanUrlInput');
       if (input) {
         navigator.clipboard.writeText(input.value);
-        showToast('학생 접속 주소가 복사되었습니다!');
+        const orig = copyLanBtn.textContent;
+        copyLanBtn.textContent = '복사 완료! ✓';
+        setTimeout(() => { copyLanBtn.textContent = orig; }, 1500);
       }
     });
   }
@@ -2546,18 +2495,8 @@ function bindModalEvents() {
 }
 
 function showToast(msg) {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
-  while (container.children.length >= 2) {
-    container.firstElementChild.remove();
-  }
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.remove();
-  }, 2200);
+  // 사용자 요청: 선생님 및 전체 화면에서 거슬리는 알람 말풍선/토스트 팝업 완전 비활성화
+  return;
 }
 
 function escapeHtml(str) {

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_23" />
+  <link rel="stylesheet" href="./style.css?v=20261023_29" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -117,6 +117,18 @@
           </div>
           <p class="sentence-translation" id="sentenceTranslation"></p>
 
+          <!-- 문제 화면 A / B 파스텔 선택지 안내 바 (학생 리모컨과 100% 동일한 색상) -->
+          <div class="stage-options-preview" id="stageOptionsPreview">
+            <div class="stage-opt-pill opt-a">
+              <span class="opt-letter">A</span>
+              <span class="opt-text" id="boardOptionA">선택지 A</span>
+            </div>
+            <div class="stage-opt-pill opt-b">
+              <span class="opt-letter">B</span>
+              <span class="opt-text" id="boardOptionB">선택지 B</span>
+            </div>
+          </div>
+
           <!-- 정답 해설 배너 (정답 공개 시 표시) -->
           <div class="explanation-banner hidden" id="explanationBanner">
             <span class="exp-tag">핵심 해설</span>
@@ -175,130 +187,41 @@
           </div>
         </div>
 
-        <!-- 3개 구역 3D 플랫폼 컨테이너 (시작 광장 + 좌우 대칭 A/B 부유섬) -->
-        <div class="platforms-container">
-          <!-- 왼쪽: A 부유섬 플랫폼 (하늘색, 큼직한 표지판) -->
-          <div class="platform-zone zone-a" id="platformA">
-            <div class="zone-header">
-              <span class="zone-letter">A</span>
-              <span class="zone-word" id="zoneAWord">선택지 A</span>
-              <span class="zone-count" id="zoneACount">0명</span>
-            </div>
-            <div class="platform-floor" id="floorA">
-              <div class="trapdoor-left"></div>
-              <div class="trapdoor-right"></div>
-              <div class="platform-surface"></div>
-              <div class="abyss-pit">
-                <span>탈락</span>
+        <!-- 3D 천국 부유섬 메인 스테이지 씬 (사용자 업로드 3D 그래픽 완벽 적용) -->
+        <div class="heaven-stage-scene" id="heavenStageScene">
+          <div class="heaven-stage-canvas">
+            <img src="./assets/heaven_stage.png" alt="천국 대광장 & A B 스테이지" class="heaven-stage-img" id="heavenStageImg" />
+
+            <!-- 좌측 A 스테이지 게이트 표지판 (문제 보기 A 실시간 표시) & 인원수 -->
+            <div class="heaven-gate-box gate-a" id="gateAnchorA">
+              <div class="gate-sign-pill sign-a" id="gateSignA">
+                <span class="gate-word" id="zoneAWord">선택지 A</span>
               </div>
+              <span class="gate-count-badge count-a" id="zoneACount">0명</span>
             </div>
-            <!-- 섬 하단 원뿔형 3D 암석 & 구름 받침 -->
-            <div class="island-rock-cone">
-              <div class="rock-facet-left"></div>
-              <div class="rock-facet-mid"></div>
-              <div class="rock-facet-right"></div>
-              <div class="bottom-cloud-cushion">
-                <span class="cushion-puff puff-1"></span>
-                <span class="cushion-puff puff-2"></span>
-                <span class="cushion-puff puff-3"></span>
+
+            <!-- 우측 B 스테이지 게이트 표지판 (문제 보기 B 실시간 표시) & 인원수 -->
+            <div class="heaven-gate-box gate-b" id="gateAnchorB">
+              <div class="gate-sign-pill sign-b" id="gateSignB">
+                <span class="gate-word" id="zoneBWord">선택지 B</span>
               </div>
+              <span class="gate-count-badge count-b" id="zoneBCount">0명</span>
             </div>
+
+            <!-- 중앙 대광장 인원수 배지 & 숨김 태그 -->
+            <div class="heaven-gate-box gate-center" id="gateAnchorCenter">
+              <span class="zone-word-hidden" id="zoneCenterWord" style="display:none;">대광장</span>
+              <span class="center-count-pill" id="zoneCenterCount">대광장 0명 대기 중</span>
+            </div>
+
+            <!-- 발판 인터랙션 / 탈락 낙하 효과 트리거 (JS 연동 ID 유지) -->
+            <div class="heaven-zone-pad pad-a" id="platformA"></div>
+            <div class="heaven-zone-pad pad-center" id="platformCenter"></div>
+            <div class="heaven-zone-pad pad-b" id="platformB"></div>
+
+            <!-- 무대 위 학생 3D 아바타 레이어 -->
+            <div class="avatars-layer" id="avatarsLayer"></div>
           </div>
-
-          <!-- 가운데: 시작 광장 (구름 위의 둥근 3D 플랫폼, 잔디·나무·바위·암석 부유섬) -->
-          <div class="platform-zone zone-center" id="platformCenter">
-            <!-- 부유섬 상단 자연 풍경 (파스텔 몽실 나무 & 둥근 바위) -->
-            <div class="island-scenery">
-              <div class="island-tree tree-left">
-                <span class="tree-canopy canopy-1"></span>
-                <span class="tree-canopy canopy-2"></span>
-                <span class="tree-canopy canopy-3"></span>
-                <span class="tree-trunk"></span>
-              </div>
-              <div class="island-rocks">
-                <span class="island-rock rock-1"></span>
-                <span class="island-rock rock-2"></span>
-                <span class="island-rock rock-3"></span>
-              </div>
-              <div class="island-tree tree-right">
-                <span class="tree-canopy canopy-1"></span>
-                <span class="tree-canopy canopy-2"></span>
-                <span class="tree-trunk"></span>
-              </div>
-            </div>
-
-            <div class="zone-header">
-              <span class="zone-word" id="zoneCenterWord">시작 광장 (하늘 부유섬)</span>
-              <span class="zone-count" id="zoneCenterCount">0명</span>
-            </div>
-            <div class="platform-floor" id="floorCenter">
-              <div class="trapdoor-left"></div>
-              <div class="trapdoor-right"></div>
-              <div class="platform-surface">
-                <!-- 부유섬 상단 잔디 대지 + 흙길 + 시냇물 -->
-                <div class="island-ground">
-                  <div class="island-stream"></div>
-                  <div class="island-path"></div>
-                  <div class="plaza-pattern">
-                    <div class="plaza-circle">
-                      <div class="plaza-inner-circle"></div>
-                    </div>
-                    <div class="start-line">
-                      <span class="line-dash"></span>
-                      <span class="line-text">출발선</span>
-                      <span class="line-dash"></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="abyss-pit">
-                <span>시간 초과</span>
-              </div>
-            </div>
-
-            <!-- 부유섬 하단 원뿔형 3D 암석 & 구름 받침 (참고 이미지 완벽 구현) -->
-            <div class="island-rock-cone">
-              <div class="rock-facet-left"></div>
-              <div class="rock-facet-mid"></div>
-              <div class="rock-facet-right"></div>
-              <div class="bottom-cloud-cushion">
-                <span class="cushion-puff puff-1"></span>
-                <span class="cushion-puff puff-2"></span>
-                <span class="cushion-puff puff-3"></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 오른쪽: B 부유섬 플랫폼 (대칭 구조, 맑은 파랑 계열) -->
-          <div class="platform-zone zone-b" id="platformB">
-            <div class="zone-header">
-              <span class="zone-letter">B</span>
-              <span class="zone-word" id="zoneBWord">선택지 B</span>
-              <span class="zone-count" id="zoneBCount">0명</span>
-            </div>
-            <div class="platform-floor" id="floorB">
-              <div class="trapdoor-left"></div>
-              <div class="trapdoor-right"></div>
-              <div class="platform-surface"></div>
-              <div class="abyss-pit">
-                <span>탈락</span>
-              </div>
-            </div>
-            <!-- 섬 하단 원뿔형 3D 암석 & 구름 받침 -->
-            <div class="island-rock-cone">
-              <div class="rock-facet-left"></div>
-              <div class="rock-facet-mid"></div>
-              <div class="rock-facet-right"></div>
-              <div class="bottom-cloud-cushion">
-                <span class="cushion-puff puff-1"></span>
-                <span class="cushion-puff puff-2"></span>
-                <span class="cushion-puff puff-3"></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 아바타 레이어 -->
-          <div class="avatars-layer" id="avatarsLayer"></div>
         </div>
 
         <!-- 최종 우승 세리머니 오버레이 -->
@@ -468,6 +391,6 @@
   <!-- 토스트 알림 -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="./app.js?v=20261023_23"></script>
+  <script src="./app.js?v=20261023_29"></script>
 </body>
 </html>
