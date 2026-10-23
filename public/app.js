@@ -486,21 +486,8 @@ let serverInfo = {
 };
 
 function getStudentInviteUrl(code) {
-  const cleanCode = encodeURIComponent(code || '1004');
-  const host = window.location.hostname || '';
-  const isLocalOrPrivate =
-    !host ||
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host.startsWith('10.') ||
-    host.startsWith('192.168.') ||
-    host.startsWith('172.');
-
-  if (isLocalOrPrivate) {
-    return `${PUBLIC_APP_URL}/?role=student&room=${cleanCode}`;
-  }
-  const base = window.location.origin + window.location.pathname;
-  return `${base}?role=student&room=${cleanCode}`;
+  const cleanCode = encodeURIComponent(code || gameState.roomCode || '1004');
+  return `${PUBLIC_APP_URL}/?role=student&room=${cleanCode}`;
 }
 
 function loadQuizDatabaseFromStorage() {
@@ -1409,8 +1396,7 @@ function bindStageEvents() {
 }
 
 function openNewStudentWindow() {
-  const base = window.location.origin + window.location.pathname;
-  const url = `${base}?role=student&room=${encodeURIComponent(gameState.roomCode || '1004')}`;
+  const url = getStudentInviteUrl(gameState.roomCode);
   window.open(url, '_blank', 'width=440,height=780');
 }
 

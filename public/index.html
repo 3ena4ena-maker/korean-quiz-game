@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_18" />
+  <link rel="stylesheet" href="./style.css?v=20261023_20" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -423,14 +423,14 @@
       </div>
       <div class="modal-body invite-modal-body">
         <div class="qr-box">
-          <img id="qrCodeImage" alt="학생 접속 QR코드" src="" />
+          <img id="qrCodeImage" alt="학생 접속 QR코드" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&amp;margin=8&amp;data=https%3A%2F%2Fkorean-quiz-game.pages.dev%2F%3Frole%3Dstudent%26room%3D1004" />
           <div class="room-code-pill">방 번호: <strong id="modalRoomCode">1004</strong></div>
         </div>
         <div class="invite-info">
           <h4>스마트폰 접속 방법 (QR / 링크)</h4>
           <p>학생들은 스마트폰 카메라로 위 <strong>QR 코드</strong>를 스캔하거나 아래 주소로 접속하면 즉시 광장에 나타납니다.</p>
           <div class="url-copy-row">
-            <input type="text" id="studentLanUrlInput" readonly />
+            <input type="text" id="studentLanUrlInput" value="https://korean-quiz-game.pages.dev/?role=student&amp;room=1004" readonly />
             <button class="btn btn-primary btn-sm" id="copyLanUrlBtn">주소 복사</button>
           </div>
 
@@ -470,6 +470,6 @@
   <!-- 토스트 알림 -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="./app.js?v=20261023_18"></script>
+  <script src="./app.js?v=20261023_20"></script>
 </body>
 </html>
