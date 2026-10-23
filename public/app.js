@@ -865,14 +865,16 @@ async function hostTriggerRevealAndDrop() {
   hostBotTimeouts.push(dropTimeout);
 }
 
-function hostAddBots(count = 5) {
+function hostAddBots(count = 1) {
   const existingNames = new Set(Object.values(hostPlayersMap).map(p => p.name));
-  let added = 0;
-  for (const profile of BOT_PROFILES) {
-    if (added >= count) break;
+  for (let c = 0; c < count; c++) {
+    let profile = BOT_PROFILES.find(p => !existingNames.has(p.name));
+    if (!profile) {
+      profile = BOT_PROFILES[Math.floor(Math.random() * BOT_PROFILES.length)];
+    }
     let botName = profile.name;
     if (existingNames.has(botName)) {
-      botName = `${profile.name}${Math.floor(Math.random() * 9) + 2}`;
+      botName = `${profile.name}${Math.floor(Math.random() * 89) + 10}`;
     }
     const id = `bot_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     hostPlayersMap[id] = {
@@ -888,7 +890,6 @@ function hostAddBots(count = 5) {
       emote: null
     };
     existingNames.add(botName);
-    added++;
   }
   if (gameState.phase === 'QUESTION') {
     hostScheduleBotMoves();
@@ -1034,10 +1035,13 @@ function bindStageEvents() {
     showToast(val ? `모든 문제 제한 시간을 ${val}초로 고정했습니다.` : '문제별 설정된 제한 시간을 사용합니다.');
   });
 
-  document.getElementById('addBotsBtn').addEventListener('click', () => {
-    hostAddBots(5);
-    showToast('가상 학생 5명이 대기 광장에 입장했습니다.');
-  });
+  const addBotsBtn = document.getElementById('addBotsBtn');
+  if (addBotsBtn) {
+    addBotsBtn.addEventListener('click', () => {
+      hostAddBots(1);
+      showToast('가상 학생 1명이 대기 광장에 입장했습니다.');
+    });
+  }
 
   document.getElementById('clearBotsBtn').addEventListener('click', () => {
     for (const id of Object.keys(hostPlayersMap)) {
@@ -1055,16 +1059,20 @@ function bindStageEvents() {
     showToast('가상 학생 봇을 모두 내보냈습니다.');
   });
 
-  document.getElementById('reviveAllBtn').addEventListener('click', () => {
-    Object.values(hostPlayersMap).forEach(p => {
-      p.alive = true;
-      p.falling = false;
-      p.choice = 'CENTER';
+  const gatherBtn = document.getElementById('gatherCenterBtn') || document.getElementById('reviveAllBtn');
+  if (gatherBtn) {
+    gatherBtn.addEventListener('click', () => {
+      Object.values(hostPlayersMap).forEach(p => {
+        p.choice = 'CENTER';
+        p.alive = true;
+        p.falling = false;
+        p.emote = null;
+      });
+      gameState.lastEliminatedIds = [];
+      broadcastHostState({ resetChoices: true, reviveAll: true });
+      showToast('모든 학생을 중앙 대기 광장으로 모았습니다.');
     });
-    gameState.lastEliminatedIds = [];
-    broadcastHostState({ resetChoices: true, reviveAll: true });
-    showToast('탈락했던 모든 학생이 다시 부활했습니다.');
-  });
+  }
 
   document.getElementById('resetLobbyBtn').addEventListener('click', () => {
     clearHostTimers();
@@ -1082,8 +1090,8 @@ function bindStageEvents() {
 
   document.getElementById('startGameBtn').addEventListener('click', () => {
     if (Object.keys(hostPlayersMap).length === 0) {
-      hostAddBots(5);
-      showToast('가상 학생 5명이 함께 입장했습니다.');
+      hostAddBots(1);
+      showToast('가상 학생 1명이 함께 입장했습니다.');
     }
     hostStartQuestionRound(0);
   });
