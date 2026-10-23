@@ -1,3 +1,12 @@
+/* 교보손글씨 2019 (KyoboHandwriting 2019) 웹폰트 - 부드럽고 동글한 무료 손글씨체 */
+@font-face {
+  font-family: 'KyoboHand';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/KyoboHand.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg-main: #f0f4ff;
   --primary: #4f46e5;
@@ -16,8 +25,8 @@
   --text-dark: #1e293b;
   --text-muted: #64748b;
   --card-bg: #ffffff;
-  --font-display: 'Jua', sans-serif;
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'KyoboHand', cursive, sans-serif;
+  --font-sans: 'KyoboHand', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
@@ -28,6 +37,8 @@
 
 body {
   font-family: var(--font-sans);
+  font-size: 1.05rem;
+  letter-spacing: -0.2px;
   background: var(--bg-main);
   color: var(--text-dark);
   min-height: 100vh;
@@ -503,12 +514,12 @@ body.student-only-mode .nav-menu {
 
 .sentence-box {
   font-family: var(--font-sans);
-  font-size: 1.85rem;
+  font-size: 2.1rem;
   font-weight: 700;
   text-align: center;
   color: #0f172a;
-  line-height: 1.5;
-  margin: 12px 0 8px;
+  line-height: 1.55;
+  margin: 14px 0 10px;
   word-break: keep-all;
 }
 
