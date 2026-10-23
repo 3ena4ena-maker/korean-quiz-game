@@ -47,12 +47,36 @@ body {
   overflow-x: hidden;
 }
 
-/* 학생 전용 모드일 때 선생님 전용 메뉴만 숨기고 광장 무대와 학생 리모컨 탭은 자유롭게 이용 가능 */
+/* 학생 전용 모드일 때 상단 전체 네비게이션 바 및 광장/문장수정 카테고리 완전 삭제 (학생이 문제를 임의로 시작하지 못하도록 차단) */
+body.student-only-mode .topbar,
+body.student-only-mode #mainTopbar,
+body.student-only-mode .nav-menu,
+body.student-only-mode [data-tab="stage"],
 body.student-only-mode [data-tab="editor"],
+body.student-only-mode [data-tab="student-full"],
 body.student-only-mode #openInviteModalBtn,
 body.student-only-mode #toggleSoundBtn,
-body.student-only-mode .teacher-control-bar {
+body.student-only-mode .teacher-control-bar,
+body.student-only-mode .student-view-bar,
+body.student-only-mode #miniPhoneDrawer,
+body.student-only-mode #toggleMiniPhoneBtn,
+body.student-only-mode #inviteModal {
   display: none !important;
+}
+
+body.student-only-mode #view-stage,
+body.student-only-mode #view-editor {
+  display: none !important;
+}
+
+body.student-only-mode #view-student-full {
+  display: flex !important;
+  flex: 1;
+  min-height: 100vh;
+  padding: 16px 12px;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 50% 15%, #eff6ff 0%, #e0f2fe 45%, #f1f5f9 100%);
 }
 
 .hidden {

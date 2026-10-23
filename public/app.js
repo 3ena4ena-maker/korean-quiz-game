@@ -950,6 +950,7 @@ function broadcastHostState(options = {}) {
 }
 
 function hostStartQuestionRound(index) {
+  if (isStudentUrlMode) return; // 퀴즈 시작은 오직 선생님 화면에서만 가능
   clearHostTimers();
   const activeSet = getActiveQuizSet();
   if (!activeSet || !activeSet.questions.length) return;
@@ -1271,6 +1272,9 @@ function applyNewGameState(newState) {
 // 상단 탭 전환 & 선생님 컨트롤 이벤트
 // =========================================================================
 function switchView(tabName) {
+  if (isStudentUrlMode) {
+    tabName = 'student-full'; // 학생은 광장이나 문장수정 탭으로 절대 전환 불가
+  }
   document.querySelectorAll('.mode-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
   });
@@ -1414,6 +1418,7 @@ function bindStageEvents() {
   const startBtn = document.getElementById('startGameBtn');
   if (startBtn) {
     startBtn.addEventListener('click', () => {
+      if (isStudentUrlMode) return;
       if (Object.keys(hostPlayersMap).length === 0) {
         hostAddBots(1);
       }
