@@ -10,55 +10,55 @@
           "id": "q101",
           "category": "조사",
           "sentence": "저는 매일 아침 맛있는 사과[ _____ ] 먹어요.",
-          "translation": "I eat a delicious apple every morning.",
           "optionA": "를",
           "optionB": "에",
           "answer": "A",
           "timeLimit": 5,
+          "translation": "I eat a delicious apple every morning.",
           "explanation": "'먹다'의 목적어 앞에는 받침이 없을 때 조사 '를'을 씁니다."
         },
         {
           "id": "q102",
           "category": "조사",
           "sentence": "지금 도서관[ _____ ] 한국어를 공부하고 있어요.",
-          "translation": "I am studying Korean at the library right now.",
           "optionA": "에",
           "optionB": "에서",
           "answer": "B",
           "timeLimit": 5,
+          "translation": "I am studying Korean at the library right now.",
           "explanation": "행동(공부하다)이 이루어지는 장소 뒤에는 '에서'를 씁니다."
         },
         {
           "id": "q103",
           "category": "동사",
           "sentence": "오늘 날씨가 아주 추우니까 따뜻한 코트를 [ _____ ].",
-          "translation": "It's very cold today, so please wear a warm coat.",
           "optionA": "입으세요",
           "optionB": "신으세요",
           "answer": "A",
           "timeLimit": 5,
+          "translation": "It's very cold today, so please wear a warm coat.",
           "explanation": "옷(코트, 바지, 치마)은 '입다', 신발이나 양말은 '신다'를 씁니다."
         },
         {
           "id": "q104",
           "category": "형용사",
           "sentence": "새로 산 구두가 너무 작아서 발이 [ _____ ].",
-          "translation": "My feet hurt because the new shoes are too small.",
           "optionA": "고파요",
           "optionB": "아파요",
           "answer": "B",
           "timeLimit": 5,
+          "translation": "My feet hurt because the new shoes are too small.",
           "explanation": "몸에 통증이 있을 때는 '아프다(아파요)'를 사용합니다."
         },
         {
           "id": "q105",
           "category": "조사",
           "sentence": "이번 주말에 친구[ _____ ] 같이 영화관에 갈 거예요.",
-          "translation": "I am going to the movie theater together with my friend this weekend.",
           "optionA": "하고",
           "optionB": "마다",
           "answer": "A",
           "timeLimit": 5,
+          "translation": "I am going to the movie theater together with my friend this weekend.",
           "explanation": "'~와/과 함께'의 의미로 구어체에서는 '하고'를 자주 씁니다."
         }
       ]

@@ -54,7 +54,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '를',
           optionB: '에',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "'먹다'의 목적어 앞에는 받침이 없을 때 조사 '를'을 씁니다."
         },
         {
@@ -65,7 +65,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '에',
           optionB: '에서',
           answer: 'B',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "행동(공부하다)이 이루어지는 장소 뒤에는 '에서'를 씁니다."
         },
         {
@@ -76,7 +76,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '입으세요',
           optionB: '신으세요',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "옷(코트, 바지, 치마)은 '입다', 신발이나 양말은 '신다'를 씁니다."
         },
         {
@@ -87,7 +87,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '고파요',
           optionB: '아파요',
           answer: 'B',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "몸에 통증이 있을 때는 '아프다(아파요)'를 사용합니다."
         },
         {
@@ -98,7 +98,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '하고',
           optionB: '마다',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "'~와/과 함께'의 의미로 구어체에서는 '하고'를 자주 씁니다."
         }
       ]
@@ -116,7 +116,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '그래서',
           optionB: '그러나',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "앞 문장이 원인이 되고 뒤 문장이 결과일 때는 '그래서'를 씁니다."
         },
         {
@@ -127,7 +127,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '그러니까',
           optionB: '그렇지만',
           answer: 'B',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "앞의 내용과 반대되는 내용이 뒤에 올 때는 '그렇지만/그러나'를 씁니다."
         },
         {
@@ -160,7 +160,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '탑시다',
           optionB: '탔습니다',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "상대방에게 함께 하자고 제안(청유)할 때는 '-(으)ㅂ시다(탑시다)'를 씁니다."
         }
       ]
@@ -178,7 +178,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '무척',
           optionB: '별로',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "'무척'은 긍정문에서 '매우/아주'의 뜻으로 쓰이고, '별로'는 부정문(별로 안 좋다)과 함께 쓰입니다."
         },
         {
@@ -189,7 +189,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '벌써',
           optionB: '미리',
           answer: 'B',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "어떤 일이 일어나기 전에 먼저 준비할 때는 '미리'를 씁니다."
         },
         {
@@ -200,7 +200,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '유명한',
           optionB: '유행한',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "이름이 널리 알려져 있다는 뜻은 '유명하다(유명한)'입니다."
         },
         {
@@ -222,7 +222,7 @@ const DEFAULT_QUIZ_DATABASE = {
           optionA: '중요합니다',
           optionB: '위험합니다',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "가치가 크고 꼭 필요하다는 의미의 형용사는 '중요하다(중요합니다)'입니다."
         }
       ]
@@ -351,19 +351,20 @@ let gameState = {
   questionIndex: 0,
   totalQuestions: 0,
   currentQuestion: null,
-  timeLimit: 5,
-  timeRemaining: 5,
-  overrideTimeLimit: null,
+  timeLimit: 10,
+  timeRemaining: 10,
+  overrideTimeLimit: 10, // 기본 10초 설정
   players: [],
   lastEliminatedIds: []
 };
 
 let prevPhase = 'LOBBY';
 let prevTimeInt = null;
+let currentRenderedQId = null;
+let myLocalChoice = null; // 학생이 터치하자마자 UI 즉시 반응 보존용
 const avatarDomMap = new Map();
 
 let myStudentProfile = loadMyStudentProfile();
-// 학생이 QR코드로 처음 접속했을 때 자신의 이름/아바타를 확인하고 입장할 수 있게 함 (동시에 대기광장에도 즉시 등록)
 let isStudentJoined = !isStudentUrlMode ? false : Boolean(sessionStorage.getItem('kor_quiz_joined_session'));
 let isEditingStudentProfile = false;
 
@@ -401,7 +402,6 @@ let cloudWs = null;
 let cloudReconnectTimer = null;
 
 function initMultiplayerNetworking() {
-  // 1. 같은 컴퓨터 브라우저 탭 간 즉시 동기화
   if (bcChannel) {
     bcChannel.onmessage = (ev) => {
       const msg = ev.data;
@@ -415,13 +415,11 @@ function initMultiplayerNetworking() {
     };
   }
 
-  // 2. Cloudflare 실시간 클라우드 서버 연결 (스마트폰 LTE/5G/Wi-Fi 모두 지원)
   connectCloudWebSocket();
 
-  // 3. HTTP 폴백 동기화 (모바일 브라우저 백그라운드 전환이나 방화벽 대비)
   setInterval(() => {
     pullCloudRoomState();
-  }, 2000);
+  }, 1500);
 }
 
 function connectCloudWebSocket() {
@@ -434,10 +432,8 @@ function connectCloudWebSocket() {
 
     cloudWs.onopen = () => {
       if (isStudentUrlMode || isStudentJoined) {
-        // 학생 화면이면 접속 즉시 내 아바타를 대기광장에 등록!
         postStudentJoinToCloud();
       } else {
-        // 선생님 화면이면 현재 클라우드 방에 이미 들어와 있는 학생들을 먼저 불러옴
         pullCloudRoomState();
       }
     };
@@ -461,7 +457,7 @@ function connectCloudWebSocket() {
 
     cloudWs.onclose = () => {
       if (cloudReconnectTimer) clearTimeout(cloudReconnectTimer);
-      cloudReconnectTimer = setTimeout(connectCloudWebSocket, 1800);
+      cloudReconnectTimer = setTimeout(connectCloudWebSocket, 1500);
     };
   } catch (e) {
     console.warn('Cloud WebSocket error:', e);
@@ -510,14 +506,21 @@ function mergeRealStudentsFromCloud(cloudState) {
         existing.avatar !== cp.avatar ||
         existing.country !== cp.country ||
         existing.emote !== cp.emote ||
-        (gameState.phase === 'QUESTION' && cp.choice !== existing.choice && (cp.choice === 'A' || cp.choice === 'B'))
+        (cp.choice !== existing.choice && (cp.choice === 'A' || cp.choice === 'B'))
       ) {
         existing.name = cp.name;
         existing.avatar = cp.avatar;
         existing.country = cp.country;
         existing.emote = cp.emote;
-        if (gameState.phase === 'QUESTION' && (cp.choice === 'A' || cp.choice === 'B')) {
+        if (cp.choice === 'A' || cp.choice === 'B') {
           existing.choice = cp.choice;
+          // REVEAL 상태에서 도착했더라도 정답이면 탈락 취소
+          if (gameState.phase === 'REVEAL' && gameState.currentQuestion) {
+            if (existing.choice === gameState.currentQuestion.answer) {
+              existing.falling = false;
+              gameState.lastEliminatedIds = gameState.lastEliminatedIds.filter(id => id !== cp.id);
+            }
+          }
         }
         changed = true;
       }
@@ -552,7 +555,6 @@ function sendStudentAction(actionMsg) {
   if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
     cloudWs.send(JSON.stringify(actionMsg));
   }
-  // HTTP POST 이중 보장 (WebSocket 연결 전이라도 즉시 서버에 반영)
   fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -593,12 +595,36 @@ function handleIncomingStudentAction(msg, fromCloudRelay = false) {
     };
     broadcastHostState({ skipCloudPush: fromCloudRelay });
   } else if (msg.type === 'student:choose') {
-    if (gameState.phase !== 'QUESTION') return;
     const { playerId, choice } = msg.payload || {};
-    const player = hostPlayersMap[playerId];
-    if (!player || !player.alive) return;
     if (choice !== 'A' && choice !== 'B') return;
+
+    let player = hostPlayersMap[playerId];
+    if (!player) {
+      player = {
+        id: playerId,
+        name: '학생',
+        avatar: 'bear',
+        country: '🌏',
+        choice: 'CENTER',
+        alive: true,
+        falling: false,
+        score: 0,
+        isBot: false,
+        emote: null
+      };
+      hostPlayersMap[playerId] = player;
+    }
+
     player.choice = choice;
+
+    // 만약 REVEAL 단계(정답 공개 후 바닥 열리기 전 1.2초)에 도착한 늦은 네트워크 응답이어도 정답이면 생존 인정!
+    if (gameState.phase === 'REVEAL' && gameState.currentQuestion) {
+      if (choice === gameState.currentQuestion.answer) {
+        player.falling = false;
+        gameState.lastEliminatedIds = gameState.lastEliminatedIds.filter(id => id !== playerId);
+      }
+    }
+
     broadcastHostState({ skipCloudPush: fromCloudRelay });
   } else if (msg.type === 'student:emote') {
     const { playerId, emote } = msg.payload || {};
@@ -707,23 +733,15 @@ function hostStartQuestionRound(index) {
   const qIdx = Math.max(0, Math.min(index, activeSet.questions.length - 1));
   const question = activeSet.questions[qIdx];
 
-  const aliveList = Object.values(hostPlayersMap).filter(p => p.alive);
-  let revivedEveryone = false;
-  if (aliveList.length === 0 && Object.keys(hostPlayersMap).length > 0) {
-    revivedEveryone = true;
-    Object.values(hostPlayersMap).forEach(p => {
-      p.alive = true;
-      p.falling = false;
-    });
-  }
-
+  // 수업 모드: 매 문제마다 모든 학생이 다시 무대 위에서 참여하여 배울 수 있게 부활시킵니다!
   Object.values(hostPlayersMap).forEach(p => {
-    p.choice = 'CENTER';
+    p.alive = true;
     p.falling = false;
+    p.choice = 'CENTER';
     p.emote = null;
   });
 
-  const limit = gameState.overrideTimeLimit || Number(question.timeLimit) || 5;
+  const limit = gameState.overrideTimeLimit || Number(question.timeLimit) || 10;
   gameState.questionIndex = qIdx;
   gameState.currentQuestion = question;
   gameState.timeLimit = limit;
@@ -731,7 +749,7 @@ function hostStartQuestionRound(index) {
   gameState.phase = 'QUESTION';
   gameState.lastEliminatedIds = [];
 
-  broadcastHostState({ resetChoices: true, reviveAll: revivedEveryone });
+  broadcastHostState({ resetChoices: true, reviveAll: true });
   hostScheduleBotMoves();
 
   hostTimerInterval = setInterval(() => {
@@ -750,10 +768,10 @@ function hostScheduleBotMoves() {
 
   const correctAns = gameState.currentQuestion.answer;
   const wrongAns = correctAns === 'A' ? 'B' : 'A';
-  const maxDelayMs = Math.max(1800, (gameState.timeLimit - 1.1) * 1000);
+  const maxDelayMs = Math.max(2000, (gameState.timeLimit - 1.2) * 1000);
 
   bots.forEach((bot) => {
-    const delay = 650 + Math.random() * (maxDelayMs - 650);
+    const delay = 800 + Math.random() * (maxDelayMs - 800);
     const t = setTimeout(() => {
       if (gameState.phase !== 'QUESTION' || !hostPlayersMap[bot.id] || !hostPlayersMap[bot.id].alive) return;
       const pickCorrect = Math.random() < 0.68;
@@ -800,7 +818,7 @@ function hostTriggerRevealAndDrop() {
       broadcastHostState();
     }, 1800);
     hostBotTimeouts.push(finishDropTimeout);
-  }, 1200);
+  }, 1400);
 
   hostBotTimeouts.push(dropTimeout);
 }
@@ -869,7 +887,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     await pullCloudRoomState();
     broadcastHostState();
   } else {
-    // 학생이 QR코드로 접속하자마자 즉시 대기광장에 아바타를 올리고, 이름/캐릭터 변경도 실시간 반영
     postStudentJoinToCloud();
   }
   renderStudentControllers();
@@ -882,6 +899,9 @@ function applyNewGameState(newState) {
     if (newState.phase === 'REVEAL') sfx.reveal();
     if (newState.phase === 'DROP') sfx.fall();
     if (newState.phase === 'WINNER') sfx.win();
+    if (newState.phase === 'QUESTION') {
+      myLocalChoice = null; // 새 문제 시작 시 내 선택 초기화
+    }
   }
 
   if (newState.phase === 'QUESTION') {
@@ -1126,9 +1146,9 @@ function renderStageUI() {
     const timerPill = document.getElementById('timerPill');
     const timerNum = document.getElementById('timerNumber');
     timerNum.textContent = Number(gameState.timeRemaining).toFixed(1);
-    timerPill.classList.toggle('urgent', gameState.phase === 'QUESTION' && gameState.timeRemaining <= 2.0);
+    timerPill.classList.toggle('urgent', gameState.phase === 'QUESTION' && gameState.timeRemaining <= 2.5);
 
-    const pct = Math.max(0, Math.min(100, (gameState.timeRemaining / (gameState.timeLimit || 5)) * 100));
+    const pct = Math.max(0, Math.min(100, (gameState.timeRemaining / (gameState.timeLimit || 10)) * 100));
     document.getElementById('timerProgressBar').style.width = `${pct}%`;
 
     const isRevealed = ['REVEAL', 'DROP', 'WINNER'].includes(gameState.phase);
@@ -1200,7 +1220,7 @@ function renderStageUI() {
   } else if (gameState.phase === 'QUESTION') {
     banner.textContent = `🏃‍♂️ 빈칸에 들어갈 정답(A 또는 B)으로 걸어가서 앞에 서세요! (${Number(gameState.timeRemaining).toFixed(1)}초)`;
   } else if (gameState.phase === 'REVEAL') {
-    banner.textContent = `🥁 정답 공개! 정답은 [${q ? q.answer : ''}] 입니다! 오답 위치를 확인합니다...`;
+    banner.textContent = `🥁 정답 공개! 정답은 [${q ? q.answer : ''}] 입니다!`;
   } else if (gameState.phase === 'DROP') {
     banner.textContent = `🕳️ 오답 구역 바닥이 열립니다! 오답 아바타들이 아래로 떨어집니다!`;
   } else if (gameState.phase === 'WINNER') {
@@ -1383,7 +1403,7 @@ function renderWinnerPodium() {
   if (winners.length === 0 && gameState.players.length > 0) {
     const maxScore = Math.max(...gameState.players.map(p => p.score || 0));
     winners = gameState.players.filter(p => (p.score || 0) === maxScore);
-    subtitle.textContent = `마지막 라운드에 모두 떨어졌지만, 가장 많은 문제를 맞힌 최다 득점 아바타입니다!`;
+    subtitle.textContent = `모든 라운드를 마치고 가장 많은 문제를 맞힌 챔피언 아바타입니다!`;
   } else {
     subtitle.textContent = `총 ${gameState.players.length}명 중 끝까지 살아남은 ${winners.length}명의 한국어 서바이벌 챔피언!`;
   }
@@ -1407,7 +1427,7 @@ function renderWinnerPodium() {
 }
 
 // =========================================================================
-// 학생용 모바일 컨트롤러 렌더링
+// 학생용 모바일 컨트롤러 렌더링 (안정적인 DOM 업데이트로 터치 드롭 방지)
 // =========================================================================
 function joinAsStudent() {
   isStudentJoined = true;
@@ -1429,7 +1449,9 @@ function renderStudentControllers() {
   mounts.forEach((mount) => {
     if (!mount) return;
 
+    // 1. 프로필 설정 모드
     if (!isStudentJoined || isEditingStudentProfile) {
+      currentRenderedQId = null;
       mount.innerHTML = `
         <div class="st-box">
           <h3 style="text-align:center; font-family:var(--font-display); font-size:1.3rem;">
@@ -1495,121 +1517,155 @@ function renderStudentControllers() {
       return;
     }
 
+    // 2. 게임 진행 컨트롤러 모드
+    const activeChoice = myLocalChoice || (meOnServer ? meOnServer.choice : 'CENTER');
     const isAlive = meOnServer ? meOnServer.alive : true;
-    const myChoice = meOnServer ? meOnServer.choice : 'CENTER';
+    const currentQKey = q ? `${q.id}_${gameState.phase}_${isAlive}` : `lobby_${gameState.phase}`;
 
-    let centerContentHtml = '';
+    // 화면 상태(문제 번호/상태/생존여부)가 변경되었을 때만 전체 레이아웃을 다시 그리고,
+    // 타이머 틱 동안에는 기존 버튼을 파괴하지 않고 유지하여 모바일 터치 이벤트 누락을 100% 방지합니다!
+    if (mount.dataset.lastQKey !== currentQKey) {
+      mount.dataset.lastQKey = currentQKey;
 
-    if (!isAlive) {
-      centerContentHtml = `
-        <div class="st-question-prompt" style="background:#fff1f2; color:#be123c;">
-          🕳️ 아쉽게도 오답 구역에서 떨어졌어요!<br/>
-          <small style="color:#64748b;">선생님이 [전원 부활]이나 새 게임을 시작하면 다시 참여할 수 있어요.</small>
-        </div>
-      `;
-    } else if (gameState.phase === 'LOBBY') {
-      centerContentHtml = `
-        <div class="st-question-prompt" style="background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0;">
-          🟢 <strong>교실 대기광장에 입장 완료!</strong><br/>
-          <small style="color:#065f46;">선생님 화면 중앙 출발선에 내 아바타가 서 있어요. 문제가 시작되면 A / B 버튼이 열립니다!</small>
-        </div>
-      `;
-    } else if (gameState.phase === 'QUESTION' && q) {
-      centerContentHtml = `
-        <div class="st-question-prompt">
-          <div style="font-size:0.8rem; color:#4f46e5; margin-bottom:4px;">⏰ 남은 시간: ${Number(gameState.timeRemaining).toFixed(1)}초</div>
-          ${escapeHtml(q.sentence)}
-        </div>
-        <div class="st-ab-buttons">
-          <button type="button" class="st-choice-btn btn-a ${myChoice === 'A' ? 'selected' : ''}" data-choice="A">
-            <span class="st-choice-letter">A</span>
-            <span class="st-choice-word">${escapeHtml(q.optionA)}</span>
-          </button>
-          <button type="button" class="st-choice-btn btn-b ${myChoice === 'B' ? 'selected' : ''}" data-choice="B">
-            <span class="st-choice-letter">B</span>
-            <span class="st-choice-word">${escapeHtml(q.optionB)}</span>
-          </button>
-        </div>
-        <p style="text-align:center; font-size:0.8rem; color:#64748b;">
-          ${myChoice === 'CENTER' ? '👆 버튼을 누르면 아바타가 선택한 정답 앞으로 걸어갑니다!' : `🏃 현재 [${myChoice}] 구역 앞에 서 있습니다!`}
-        </p>
-      `;
-    } else if ((gameState.phase === 'REVEAL' || gameState.phase === 'DROP') && q) {
-      const wonRound = myChoice === q.answer;
-      centerContentHtml = `
-        <div class="st-question-prompt" style="background:${wonRound ? '#ecfdf5' : '#fef2f2'}; color:${wonRound ? '#047857' : '#b91c1c'};">
-          ${wonRound ? '🎉 정답입니다! 살아남았어요!' : '😱 오답입니다! 바닥이 열립니다!'}
-          <div style="margin-top:6px; font-size:0.86rem; color:#334155;">정답: <strong>${q.answer}. ${escapeHtml(q.answer === 'A' ? q.optionA : q.optionB)}</strong></div>
-        </div>
-      `;
-    } else if (gameState.phase === 'WINNER') {
-      centerContentHtml = `
-        <div class="st-question-prompt" style="background:#fef3c7; color:#92400e;">
-          👑 최후의 서바이벌 우승자 발표 중!
-        </div>
-      `;
-    }
+      let centerContentHtml = '';
 
-    mount.innerHTML = `
-      <div class="st-box">
-        <div class="st-profile-bar">
-          <div class="st-me-info">
-            <span class="st-me-emoji">${av.emoji}</span>
-            <div>
-              <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)}</div>
-              <div class="st-me-status" style="color:${isAlive ? '#059669' : '#e11d48'};">
-                ${isAlive ? '🌟 생존 중' : '☁️ 탈락 (관전 중)'} · 점수 ${meOnServer ? meOnServer.score : 0}점
+      if (!isAlive) {
+        centerContentHtml = `
+          <div class="st-question-prompt" style="background:#fff1f2; color:#be123c;">
+            🕳️ 아쉽게도 오답 구역에서 떨어졌어요!<br/>
+            <small style="color:#64748b;">다음 문제가 시작되면 자동으로 무대에 부활합니다!</small>
+          </div>
+        `;
+      } else if (gameState.phase === 'LOBBY') {
+        centerContentHtml = `
+          <div class="st-question-prompt" style="background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0;">
+            🟢 <strong>교실 대기광장에 입장 완료!</strong><br/>
+            <small style="color:#065f46;">선생님 화면 중앙 출발선에 내 아바타가 서 있어요. 문제가 시작되면 A / B 버튼이 열립니다!</small>
+          </div>
+        `;
+      } else if (gameState.phase === 'QUESTION' && q) {
+        centerContentHtml = `
+          <div class="st-question-prompt">
+            <div class="st-timer-display" style="font-size:0.86rem; color:#4f46e5; margin-bottom:4px; font-weight:800;">
+              ⏰ 남은 시간: <span class="st-timer-val">${Number(gameState.timeRemaining).toFixed(1)}</span>초
+            </div>
+            <div class="st-sentence-val">${escapeHtml(q.sentence)}</div>
+          </div>
+          <div class="st-ab-buttons">
+            <button type="button" class="st-choice-btn btn-a" data-choice="A">
+              <span class="st-choice-letter">A</span>
+              <span class="st-choice-word">${escapeHtml(q.optionA)}</span>
+            </button>
+            <button type="button" class="st-choice-btn btn-b" data-choice="B">
+              <span class="st-choice-letter">B</span>
+              <span class="st-choice-word">${escapeHtml(q.optionB)}</span>
+            </button>
+          </div>
+          <p class="st-choice-guide" style="text-align:center; font-size:0.82rem; color:#64748b; font-weight:700;">
+            ${activeChoice === 'CENTER' ? '👆 버튼을 누르면 아바타가 선택한 정답 앞으로 걸어갑니다!' : `🏃 현재 [${activeChoice}] 구역 앞에 서 있습니다!`}
+          </p>
+        `;
+      } else if ((gameState.phase === 'REVEAL' || gameState.phase === 'DROP') && q) {
+        const wonRound = activeChoice === q.answer;
+        centerContentHtml = `
+          <div class="st-question-prompt" style="background:${wonRound ? '#ecfdf5' : '#fef2f2'}; color:${wonRound ? '#047857' : '#b91c1c'};">
+            ${wonRound ? '🎉 정답입니다! 살아남았어요!' : '😱 오답입니다! 바닥이 열립니다!'}
+            <div style="margin-top:6px; font-size:0.86rem; color:#334155;">정답: <strong>${q.answer}. ${escapeHtml(q.answer === 'A' ? q.optionA : q.optionB)}</strong></div>
+          </div>
+        `;
+      } else if (gameState.phase === 'WINNER') {
+        centerContentHtml = `
+          <div class="st-question-prompt" style="background:#fef3c7; color:#92400e;">
+            👑 최후의 서바이벌 우승자 발표 중!
+          </div>
+        `;
+      }
+
+      mount.innerHTML = `
+        <div class="st-box">
+          <div class="st-profile-bar">
+            <div class="st-me-info">
+              <span class="st-me-emoji">${av.emoji}</span>
+              <div>
+                <div class="st-me-name">${escapeHtml(myStudentProfile.country)} ${escapeHtml(myStudentProfile.name)}</div>
+                <div class="st-me-status" style="color:${isAlive ? '#059669' : '#e11d48'};">
+                  ${isAlive ? '🌟 생존 중' : '☁️ 탈락 (다음 문제에 부활)'} · 누적 ${meOnServer ? meOnServer.score : 0}점
+                </div>
               </div>
             </div>
+            <button type="button" class="btn btn-outline-sm st-edit-profile-btn">아바타 변경</button>
           </div>
-          <button type="button" class="btn btn-outline-sm st-edit-profile-btn">아바타 변경</button>
-        </div>
 
-        ${centerContentHtml}
+          <div class="st-dynamic-content">${centerContentHtml}</div>
 
-        <div class="field-group">
-          <label>💬 내 아바타 머리 위 말풍선 보내기</label>
-          <div class="st-emote-row">
-            <button type="button" class="st-emote-btn" data-emote="안녕하세요! 👋">안녕👋</button>
-            <button type="button" class="st-emote-btn" data-emote="자신 있어요! ✨">자신있어✨</button>
-            <button type="button" class="st-emote-btn" data-emote="헷갈려요 💦">헷갈려💦</button>
-            <button type="button" class="st-emote-btn" data-emote="한국어 최고! ❤️">최고❤️</button>
+          <div class="field-group">
+            <label>💬 내 아바타 머리 위 말풍선 보내기</label>
+            <div class="st-emote-row">
+              <button type="button" class="st-emote-btn" data-emote="안녕하세요! 👋">안녕👋</button>
+              <button type="button" class="st-emote-btn" data-emote="자신 있어요! ✨">자신있어✨</button>
+              <button type="button" class="st-emote-btn" data-emote="헷갈려요 💦">헷갈려💦</button>
+              <button type="button" class="st-emote-btn" data-emote="한국어 최고! ❤️">최고❤️</button>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
 
-    const editBtn = mount.querySelector('.st-edit-profile-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        isEditingStudentProfile = true;
-        renderStudentControllers();
+      const editBtn = mount.querySelector('.st-edit-profile-btn');
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          isEditingStudentProfile = true;
+          renderStudentControllers();
+        });
+      }
+
+      mount.querySelectorAll('.st-choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const choice = btn.dataset.choice;
+          myLocalChoice = choice;
+          sfx.step();
+
+          // 즉시 UI 선택 스타일 반영
+          mount.querySelectorAll('.st-choice-btn').forEach(b => {
+            b.classList.toggle('selected', b.dataset.choice === choice);
+          });
+          const guide = mount.querySelector('.st-choice-guide');
+          if (guide) guide.textContent = `🏃 [${choice}] 구역으로 걸어갔습니다!`;
+
+          sendStudentAction({
+            type: 'student:choose',
+            payload: {
+              playerId: myStudentProfile.playerId,
+              choice
+            }
+          });
+        });
       });
+
+      mount.querySelectorAll('.st-emote-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          sendStudentAction({
+            type: 'student:emote',
+            payload: {
+              playerId: myStudentProfile.playerId,
+              emote: btn.dataset.emote
+            }
+          });
+        });
+      });
+    } else {
+      // DOM 재구축 없이 타이머 숫자 및 버튼 선택 상태만 갱신 (터치 안정성 극대화)
+      const timerVal = mount.querySelector('.st-timer-val');
+      if (timerVal) {
+        timerVal.textContent = Number(gameState.timeRemaining).toFixed(1);
+      }
+      mount.querySelectorAll('.st-choice-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.choice === activeChoice);
+      });
+      const guide = mount.querySelector('.st-choice-guide');
+      if (guide && activeChoice !== 'CENTER') {
+        guide.textContent = `🏃 현재 [${activeChoice}] 구역 앞에 서 있습니다!`;
+      }
     }
-
-    mount.querySelectorAll('.st-choice-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        sendStudentAction({
-          type: 'student:choose',
-          payload: {
-            playerId: myStudentProfile.playerId,
-            choice: btn.dataset.choice
-          }
-        });
-      });
-    });
-
-    mount.querySelectorAll('.st-emote-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        sendStudentAction({
-          type: 'student:emote',
-          payload: {
-            playerId: myStudentProfile.playerId,
-            emote: btn.dataset.emote
-          }
-        });
-      });
-    });
   });
 }
 
@@ -1694,8 +1750,9 @@ function renderEditorMain() {
         <div class="field-group">
           <label>⏱️ 제한 시간</label>
           <select class="field-input q-timelimit">
+            <option value="10" ${Number(q.timeLimit) === 10 ? 'selected' : ''}>10초 (권장)</option>
+            <option value="15" ${Number(q.timeLimit) === 15 ? 'selected' : ''}>15초 (초급반)</option>
             <option value="5" ${Number(q.timeLimit) === 5 ? 'selected' : ''}>5초 (스피드)</option>
-            <option value="10" ${Number(q.timeLimit) === 10 ? 'selected' : ''}>10초 (여유)</option>
           </select>
         </div>
       </div>
@@ -1760,7 +1817,7 @@ function syncCurrentSetFromInputs() {
       optionA: card.querySelector('.q-opt-a').value.trim() || '보기 A',
       optionB: card.querySelector('.q-opt-b').value.trim() || '보기 B',
       answer: card.querySelector('.q-answer').value === 'B' ? 'B' : 'A',
-      timeLimit: Number(card.querySelector('.q-timelimit').value) || 5,
+      timeLimit: Number(card.querySelector('.q-timelimit').value) || 10,
       translation: card.querySelector('.q-translation').value.trim(),
       explanation: card.querySelector('.q-explanation').value.trim()
     });
@@ -1799,7 +1856,7 @@ function bindEditorEvents() {
           optionA: '재미있어요',
           optionB: '짜증나요',
           answer: 'A',
-          timeLimit: 5,
+          timeLimit: 10,
           explanation: "즐겁고 흥미로울 때는 형용사 '재미있다(재미있어요)'를 씁니다."
         }
       ]
@@ -1822,7 +1879,7 @@ function bindEditorEvents() {
       optionA: '정답 단어',
       optionB: '오답 단어',
       answer: 'A',
-      timeLimit: 5,
+      timeLimit: 10,
       explanation: ''
     });
     renderEditorSidebar();
@@ -1937,7 +1994,7 @@ function bindModalEvents() {
         const optionA = parts[1] || '보기 A';
         const optionB = parts[2] || '보기 B';
         const ans = (parts[3] || 'A').toUpperCase() === 'B' ? 'B' : 'A';
-        const time = Number(parts[4]) === 10 ? 10 : 5;
+        const time = Number(parts[4]) === 15 ? 15 : (Number(parts[4]) === 5 ? 5 : 10);
 
         set.questions.push({
           id: `q_bulk_${Date.now()}_${idx}`,

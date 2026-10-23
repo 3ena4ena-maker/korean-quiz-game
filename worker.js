@@ -12,8 +12,8 @@ export class QuizRoom {
       questionIndex: 0,
       totalQuestions: 5,
       currentQuestion: null,
-      timeLimit: 5,
-      timeRemaining: 5,
+      timeLimit: 10,
+      timeRemaining: 10,
       overrideTimeLimit: null,
       players: {},
       lastEliminatedIds: [],
@@ -67,7 +67,7 @@ export class QuizRoom {
         }
       }
 
-      // 2. Merge incoming players from host (bots + round status updates for real students)
+      // 2. Merge incoming players from host
       if (Array.isArray(incoming.players)) {
         for (const p of incoming.players) {
           if (!p || !p.id) continue;
@@ -76,14 +76,12 @@ export class QuizRoom {
               mergedPlayers[p.id] = p;
             }
           } else if (mergedPlayers[p.id]) {
-            // Real student already exists in roomState:
-            // Only overwrite choice if host explicitly reset choices (new question / lobby / revive)
             mergedPlayers[p.id] = {
               ...mergedPlayers[p.id],
-              alive: p.alive,
+              alive: msg.reviveAll ? true : (p.alive !== undefined ? p.alive : mergedPlayers[p.id].alive),
               falling: p.falling,
-              score: p.score,
-              choice: msg.resetChoices ? p.choice : mergedPlayers[p.id].choice
+              score: p.score !== undefined ? p.score : mergedPlayers[p.id].score,
+              choice: msg.resetChoices ? 'CENTER' : (mergedPlayers[p.id].choice || p.choice)
             };
           } else {
             mergedPlayers[p.id] = p;
@@ -91,7 +89,6 @@ export class QuizRoom {
         }
       }
 
-      // If host explicitly reset choices (new question round / reset lobby / revive all), apply to all real students too
       if (msg.resetChoices) {
         for (const p of Object.values(mergedPlayers)) {
           p.choice = 'CENTER';
@@ -157,13 +154,28 @@ export class QuizRoom {
 
     if (msg.type === 'student:choose') {
       const { playerId, choice } = msg.payload || {};
-      const player = this.roomState.players[playerId];
-      if (player && player.alive && (choice === 'A' || choice === 'B')) {
+      if (choice === 'A' || choice === 'B') {
+        let player = this.roomState.players[playerId];
+        if (!player) {
+          player = {
+            id: playerId,
+            name: '학생',
+            avatar: 'bear',
+            country: '🌏',
+            choice: 'CENTER',
+            alive: true,
+            falling: false,
+            score: 0,
+            isBot: false,
+            emote: null
+          };
+          this.roomState.players[playerId] = player;
+        }
         player.choice = choice;
         this.roomState.updatedAt = Date.now();
+        this.forwardToAll({ type: 'relay:student-action', action: msg });
+        this.broadcast();
       }
-      this.forwardToAll({ type: 'relay:student-action', action: msg });
-      this.broadcast();
       return;
     }
 
