@@ -4,7 +4,9 @@
   "description": "한국어교원 맞춤형 실시간 동시접속 빈칸 서바이벌 퀴즈 웹앱",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "echo \"Build ready in ./public\"",
+    "pages:deploy": "npx wrangler pages deploy ./public --project-name=korean-quiz-game"
   },
   "dependencies": {
     "express": "^5.1.0",
