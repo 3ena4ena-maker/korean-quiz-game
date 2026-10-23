@@ -1089,12 +1089,19 @@ function switchView(tabName) {
   document.querySelectorAll('.mode-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
   });
-  document.getElementById('view-stage').classList.toggle('active', tabName === 'stage');
-  document.getElementById('view-editor').classList.toggle('active', tabName === 'editor');
-  document.getElementById('view-student-full').classList.toggle('active', tabName === 'student-full');
+  const vStage = document.getElementById('view-stage');
+  const vEditor = document.getElementById('view-editor');
+  const vStudent = document.getElementById('view-student-full');
+  if (vStage) vStage.classList.toggle('active', tabName === 'stage');
+  if (vEditor) vEditor.classList.toggle('active', tabName === 'editor');
+  if (vStudent) vStudent.classList.toggle('active', tabName === 'student-full');
 
-  if (tabName === 'student-full' && !isStudentJoined) {
-    joinAsStudent();
+  if (tabName === 'student-full') {
+    isStudentJoined = true;
+    sessionStorage.setItem('kor_quiz_joined_session', '1');
+    const mount = document.getElementById('studentFullMount');
+    if (mount) mount.dataset.lastQKey = '';
+    renderStudentControllers();
   }
 }
 
@@ -1105,21 +1112,28 @@ function bindStageEvents() {
 
   const toggleMiniBtn = document.getElementById('toggleMiniPhoneBtn');
   const miniDrawer = document.getElementById('miniPhoneDrawer');
-  toggleMiniBtn.addEventListener('click', () => {
-    const isOpen = miniDrawer.classList.toggle('open');
-    toggleMiniBtn.classList.toggle('active', isOpen);
-    toggleMiniBtn.textContent = isOpen ? '📱 미니 학생폰 닫기' : '📱 미니 학생폰 켜기';
-    if (isOpen && !isStudentJoined) {
-      joinAsStudent();
-      showToast('내 아바타가 게임 무대에 입장했습니다! 리모컨으로 움직여보세요.');
-    }
-  });
+  if (toggleMiniBtn && miniDrawer) {
+    toggleMiniBtn.addEventListener('click', () => {
+      const isOpen = miniDrawer.classList.toggle('open');
+      toggleMiniBtn.classList.toggle('active', isOpen);
+      toggleMiniBtn.textContent = isOpen ? '📱 미니 학생폰 닫기' : '📱 미니 학생폰 켜기';
+      if (isOpen && !isStudentJoined) {
+        joinAsStudent();
+        showToast('내 아바타가 게임 무대에 입장했습니다! 리모컨으로 움직여보세요.');
+      }
+    });
+  }
 
-  document.getElementById('closeMiniPhoneBtn').addEventListener('click', () => {
-    miniDrawer.classList.remove('open');
-    toggleMiniBtn.classList.remove('active');
-    toggleMiniBtn.textContent = '📱 미니 학생폰 켜기';
-  });
+  const closeMiniBtn = document.getElementById('closeMiniPhoneBtn');
+  if (closeMiniBtn && miniDrawer) {
+    closeMiniBtn.addEventListener('click', () => {
+      miniDrawer.classList.remove('open');
+      if (toggleMiniBtn) {
+        toggleMiniBtn.classList.remove('active');
+        toggleMiniBtn.textContent = '📱 미니 학생폰 켜기';
+      }
+    });
+  }
 
   const soundBtn = document.getElementById('toggleSoundBtn');
   if (soundBtn) {
@@ -1129,28 +1143,34 @@ function bindStageEvents() {
     });
   }
 
-  document.getElementById('stageSetSelect').addEventListener('change', (e) => {
-    clearHostTimers();
-    gameState.activeSetId = e.target.value;
-    gameState.questionIndex = 0;
-    gameState.phase = 'LOBBY';
-    gameState.currentQuestion = null;
-    Object.values(hostPlayersMap).forEach(p => {
-      p.alive = true;
-      p.falling = false;
-      p.choice = 'CENTER';
-      p.score = 0;
+  const stageSetSelect = document.getElementById('stageSetSelect');
+  if (stageSetSelect) {
+    stageSetSelect.addEventListener('change', (e) => {
+      clearHostTimers();
+      gameState.activeSetId = e.target.value;
+      gameState.questionIndex = 0;
+      gameState.phase = 'LOBBY';
+      gameState.currentQuestion = null;
+      Object.values(hostPlayersMap).forEach(p => {
+        p.alive = true;
+        p.falling = false;
+        p.choice = 'CENTER';
+        p.score = 0;
+      });
+      broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
+      showToast('수업 세트가 변경되었습니다.');
     });
-    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
-    showToast('수업 세트가 변경되었습니다.');
-  });
+  }
 
-  document.getElementById('timeOverrideSelect').addEventListener('change', (e) => {
-    const val = e.target.value ? Number(e.target.value) : null;
-    gameState.overrideTimeLimit = val;
-    broadcastHostState();
-    showToast(val ? `모든 문제 제한 시간을 ${val}초로 고정했습니다.` : '문제별 설정된 제한 시간을 사용합니다.');
-  });
+  const timeOverrideSelect = document.getElementById('timeOverrideSelect');
+  if (timeOverrideSelect) {
+    timeOverrideSelect.addEventListener('change', (e) => {
+      const val = e.target.value ? Number(e.target.value) : null;
+      gameState.overrideTimeLimit = val;
+      broadcastHostState();
+      showToast(val ? `모든 문제 제한 시간을 ${val}초로 고정했습니다.` : '문제별 설정된 제한 시간을 사용합니다.');
+    });
+  }
 
   const addBotsBtn = document.getElementById('addBotsBtn');
   if (addBotsBtn) {
@@ -1160,21 +1180,24 @@ function bindStageEvents() {
     });
   }
 
-  document.getElementById('clearBotsBtn').addEventListener('click', () => {
-    for (const id of Object.keys(hostPlayersMap)) {
-      if (hostPlayersMap[id].isBot) delete hostPlayersMap[id];
-    }
-    if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
-      cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' }));
-    }
-    fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'teacher:clear-bots' })
-    }).catch(() => {});
-    broadcastHostState({ clearBotsOnly: true });
-    showToast('가상 학생 봇을 모두 내보냈습니다.');
-  });
+  const clearBotsBtn = document.getElementById('clearBotsBtn');
+  if (clearBotsBtn) {
+    clearBotsBtn.addEventListener('click', () => {
+      for (const id of Object.keys(hostPlayersMap)) {
+        if (hostPlayersMap[id].isBot) delete hostPlayersMap[id];
+      }
+      if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+        cloudWs.send(JSON.stringify({ type: 'teacher:clear-bots' }));
+      }
+      fetch(`${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'teacher:clear-bots' })
+      }).catch(() => {});
+      broadcastHostState({ clearBotsOnly: true });
+      showToast('가상 학생 봇을 모두 내보냈습니다.');
+    });
+  }
 
   const gatherBtn = document.getElementById('gatherCenterBtn') || document.getElementById('reviveAllBtn');
   if (gatherBtn) {
@@ -1191,74 +1214,102 @@ function bindStageEvents() {
     });
   }
 
-  document.getElementById('resetLobbyBtn').addEventListener('click', () => {
-    clearHostTimers();
-    gameState.phase = 'LOBBY';
-    gameState.questionIndex = 0;
-    gameState.currentQuestion = null;
-    Object.values(hostPlayersMap).forEach(p => {
-      p.alive = true;
-      p.falling = false;
-      p.choice = 'CENTER';
-      p.score = 0;
+  const resetLobbyBtn = document.getElementById('resetLobbyBtn');
+  if (resetLobbyBtn) {
+    resetLobbyBtn.addEventListener('click', () => {
+      clearHostTimers();
+      gameState.phase = 'LOBBY';
+      gameState.questionIndex = 0;
+      gameState.currentQuestion = null;
+      Object.values(hostPlayersMap).forEach(p => {
+        p.alive = true;
+        p.falling = false;
+        p.choice = 'CENTER';
+        p.score = 0;
+      });
+      broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
     });
-    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
-  });
+  }
 
-  document.getElementById('startGameBtn').addEventListener('click', () => {
-    if (Object.keys(hostPlayersMap).length === 0) {
-      hostAddBots(1);
-      showToast('가상 학생 1명이 함께 입장했습니다.');
-    }
-    hostStartQuestionRound(0);
-  });
+  const startBtn = document.getElementById('startGameBtn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      if (Object.keys(hostPlayersMap).length === 0) {
+        hostAddBots(1);
+        showToast('가상 학생 1명이 함께 입장했습니다.');
+      }
+      hostStartQuestionRound(0);
+    });
+  }
 
-  document.getElementById('openNewStudentWinBtn').addEventListener('click', openNewStudentWindow);
+  const openWinBtn = document.getElementById('openNewStudentWinBtn');
+  if (openWinBtn) openWinBtn.addEventListener('click', openNewStudentWindow);
 
-  document.getElementById('revealNowBtn').addEventListener('click', () => {
-    if (gameState.phase === 'QUESTION') {
-      hostTriggerRevealAndDrop();
-    }
-  });
+  const revealBtn = document.getElementById('revealNowBtn');
+  if (revealBtn) {
+    revealBtn.addEventListener('click', () => {
+      if (gameState.phase === 'QUESTION') {
+        hostTriggerRevealAndDrop();
+      }
+    });
+  }
 
-  document.getElementById('nextQuestionBtn').addEventListener('click', () => {
-    const activeSet = getActiveQuizSet();
-    if (!activeSet) return;
-    if (gameState.questionIndex + 1 < activeSet.questions.length) {
-      hostStartQuestionRound(gameState.questionIndex + 1);
-    } else {
+  const nextBtn = document.getElementById('nextQuestionBtn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const activeSet = getActiveQuizSet();
+      if (!activeSet) return;
+      if (gameState.questionIndex + 1 < activeSet.questions.length) {
+        hostStartQuestionRound(gameState.questionIndex + 1);
+      } else {
+        clearHostTimers();
+        gameState.phase = 'WINNER';
+        broadcastHostState();
+      }
+    });
+  }
+
+  const showWinBtn = document.getElementById('showWinnerBtn');
+  if (showWinBtn) {
+    showWinBtn.addEventListener('click', () => {
       clearHostTimers();
       gameState.phase = 'WINNER';
       broadcastHostState();
-    }
-  });
-
-  document.getElementById('showWinnerBtn').addEventListener('click', () => {
-    clearHostTimers();
-    gameState.phase = 'WINNER';
-    broadcastHostState();
-  });
-
-  document.getElementById('playAgainBtn').addEventListener('click', () => {
-    clearHostTimers();
-    gameState.phase = 'LOBBY';
-    gameState.questionIndex = 0;
-    gameState.currentQuestion = null;
-    Object.values(hostPlayersMap).forEach(p => {
-      p.alive = true;
-      p.falling = false;
-      p.choice = 'CENTER';
-      p.score = 0;
     });
-    broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
-  });
+  }
 
-  document.getElementById('winnerToEditorBtn').addEventListener('click', () => {
-    clearHostTimers();
-    gameState.phase = 'LOBBY';
-    broadcastHostState();
-    switchView('editor');
-  });
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  if (playAgainBtn) {
+    playAgainBtn.addEventListener('click', () => {
+      clearHostTimers();
+      gameState.phase = 'LOBBY';
+      gameState.questionIndex = 0;
+      gameState.currentQuestion = null;
+      Object.values(hostPlayersMap).forEach(p => {
+        p.alive = true;
+        p.falling = false;
+        p.choice = 'CENTER';
+        p.score = 0;
+      });
+      broadcastHostState({ resetChoices: true, reviveAll: true, resetScores: true });
+    });
+  }
+
+  const toEditorBtn = document.getElementById('winnerToEditorBtn');
+  if (toEditorBtn) {
+    toEditorBtn.addEventListener('click', () => {
+      clearHostTimers();
+      gameState.phase = 'LOBBY';
+      broadcastHostState();
+      switchView('editor');
+    });
+  }
+
+  const stViewNewWinBtn = document.getElementById('studentViewNewWinBtn');
+  if (stViewNewWinBtn) stViewNewWinBtn.addEventListener('click', openNewStudentWindow);
+
+  const stViewBackBtn = document.getElementById('studentViewBackStageBtn');
+  if (stViewBackBtn) stViewBackBtn.addEventListener('click', () => switchView('stage'));
 }
 
 function openNewStudentWindow() {
@@ -1284,9 +1335,12 @@ function renderStageUI() {
   const alivePlayers = gameState.players.filter(p => p.alive);
   const eliminatedPlayers = gameState.players.filter(p => !p.alive);
 
-  document.getElementById('totalPlayerCount').textContent = totalCount;
-  document.getElementById('alivePlayerCount').textContent = alivePlayers.length;
-  document.getElementById('lobbyRoomCode').textContent = gameState.roomCode;
+  const totalCountEl = document.getElementById('totalPlayerCount');
+  if (totalCountEl) totalCountEl.textContent = totalCount;
+  const aliveCountEl = document.getElementById('alivePlayerCount');
+  if (aliveCountEl) aliveCountEl.textContent = alivePlayers.length;
+  const lobbyCodeEl = document.getElementById('lobbyRoomCode');
+  if (lobbyCodeEl) lobbyCodeEl.textContent = gameState.roomCode;
 
   const setSelect = document.getElementById('stageSetSelect');
   if (setSelect && gameState.activeSetId && setSelect.value !== gameState.activeSetId) {
@@ -2158,76 +2212,120 @@ function updateInviteModalUI() {
 
 function bindModalEvents() {
   const inviteModal = document.getElementById('inviteModal');
-  document.getElementById('openInviteModalBtn').addEventListener('click', () => {
-    updateInviteModalUI();
-    inviteModal.classList.remove('hidden');
-  });
-  document.getElementById('closeInviteModalBtn').addEventListener('click', () => {
-    inviteModal.classList.add('hidden');
-  });
-  document.getElementById('copyLanUrlBtn').addEventListener('click', () => {
-    const input = document.getElementById('studentLanUrlInput');
-    navigator.clipboard.writeText(input.value);
-    showToast('학생 접속 주소가 복사되었습니다!');
-  });
-  document.getElementById('modalOpenStudentWinBtn').addEventListener('click', openNewStudentWindow);
+  const openInviteBtn = document.getElementById('openInviteModalBtn');
+  if (openInviteBtn && inviteModal) {
+    openInviteBtn.addEventListener('click', () => {
+      updateInviteModalUI();
+      inviteModal.classList.remove('hidden');
+    });
+  }
 
-  const bulkModal = document.getElementById('bulkPasteModal');
-  document.getElementById('openBulkPasteModalBtn').addEventListener('click', () => {
-    bulkModal.classList.remove('hidden');
-  });
-  document.getElementById('closeBulkPasteModalBtn').addEventListener('click', () => {
-    bulkModal.classList.add('hidden');
-  });
-  document.getElementById('cancelBulkPasteBtn').addEventListener('click', () => {
-    bulkModal.classList.add('hidden');
-  });
+  const closeInviteBtn = document.getElementById('closeInviteModalBtn');
+  if (closeInviteBtn && inviteModal) {
+    closeInviteBtn.addEventListener('click', () => {
+      inviteModal.classList.add('hidden');
+    });
+  }
 
-  document.getElementById('confirmBulkPasteBtn').addEventListener('click', () => {
-    syncCurrentSetFromInputs();
-    const raw = document.getElementById('bulkPasteTextarea').value.trim();
-    if (!raw) return;
+  if (inviteModal) {
+    inviteModal.addEventListener('click', (e) => {
+      if (e.target === inviteModal) inviteModal.classList.add('hidden');
+    });
+  }
 
-    const set = getEditingSet();
-    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    let added = 0;
-
-    lines.forEach((line, idx) => {
-      const parts = line.split('|').map(p => p.trim());
-      if (parts.length >= 3) {
-        const sentence = parts[0].includes('[') || parts[0].includes('___')
-          ? parts[0].replace(/_{2,}/g, '[ _____ ]')
-          : `${parts[0]} [ _____ ]`;
-        const optionA = parts[1] || '보기 A';
-        const optionB = parts[2] || '보기 B';
-        const ans = (parts[3] || 'A').toUpperCase() === 'B' ? 'B' : 'A';
-        const time = Number(parts[4]) === 15 ? 15 : (Number(parts[4]) === 5 ? 5 : 10);
-
-        set.questions.push({
-          id: `q_bulk_${Date.now()}_${idx}`,
-          category: '어휘/문법',
-          sentence,
-          translation: '',
-          optionA,
-          optionB,
-          answer: ans,
-          timeLimit: time,
-          explanation: ''
-        });
-        added++;
+  const copyLanBtn = document.getElementById('copyLanUrlBtn');
+  if (copyLanBtn) {
+    copyLanBtn.addEventListener('click', () => {
+      const input = document.getElementById('studentLanUrlInput');
+      if (input) {
+        navigator.clipboard.writeText(input.value);
+        showToast('학생 접속 주소가 복사되었습니다!');
       }
     });
+  }
 
-    if (added > 0) {
-      document.getElementById('bulkPasteTextarea').value = '';
+  const modalOpenStudentBtn = document.getElementById('modalOpenStudentWinBtn');
+  if (modalOpenStudentBtn) {
+    modalOpenStudentBtn.addEventListener('click', openNewStudentWindow);
+  }
+
+  const bulkModal = document.getElementById('bulkPasteModal');
+  const openBulkBtn = document.getElementById('openBulkPasteModalBtn');
+  if (openBulkBtn && bulkModal) {
+    openBulkBtn.addEventListener('click', () => {
+      bulkModal.classList.remove('hidden');
+    });
+  }
+
+  const closeBulkBtn = document.getElementById('closeBulkPasteModalBtn');
+  if (closeBulkBtn && bulkModal) {
+    closeBulkBtn.addEventListener('click', () => {
       bulkModal.classList.add('hidden');
-      renderEditorSidebar();
-      renderEditorMain();
-      showToast(`${added}개의 문장이 현재 세트에 추가되었습니다!`);
-    } else {
-      showToast('형식에 맞게 입력해주세요. (문장 | 보기A | 보기B | 정답 | 시간)');
-    }
-  });
+    });
+  }
+
+  const cancelBulkBtn = document.getElementById('cancelBulkPasteBtn');
+  if (cancelBulkBtn && bulkModal) {
+    cancelBulkBtn.addEventListener('click', () => {
+      bulkModal.classList.add('hidden');
+    });
+  }
+
+  if (bulkModal) {
+    bulkModal.addEventListener('click', (e) => {
+      if (e.target === bulkModal) bulkModal.classList.add('hidden');
+    });
+  }
+
+  const confirmBulkBtn = document.getElementById('confirmBulkPasteBtn');
+  if (confirmBulkBtn) {
+    confirmBulkBtn.addEventListener('click', () => {
+      syncCurrentSetFromInputs();
+      const textarea = document.getElementById('bulkPasteTextarea');
+      const raw = textarea ? textarea.value.trim() : '';
+      if (!raw) return;
+
+      const set = getEditingSet();
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let added = 0;
+
+      lines.forEach((line, idx) => {
+        const parts = line.split('|').map(p => p.trim());
+        if (parts.length >= 3) {
+          const sentence = parts[0].includes('[') || parts[0].includes('___')
+            ? parts[0].replace(/_{2,}/g, '[ _____ ]')
+            : `${parts[0]} [ _____ ]`;
+          const optionA = parts[1] || '보기 A';
+          const optionB = parts[2] || '보기 B';
+          const ans = (parts[3] || 'A').toUpperCase() === 'B' ? 'B' : 'A';
+          const time = Number(parts[4]) === 15 ? 15 : (Number(parts[4]) === 5 ? 5 : 10);
+
+          set.questions.push({
+            id: `q_bulk_${Date.now()}_${idx}`,
+            category: '어휘/문법',
+            sentence,
+            translation: '',
+            optionA,
+            optionB,
+            answer: ans,
+            timeLimit: time,
+            explanation: ''
+          });
+          added++;
+        }
+      });
+
+      if (added > 0) {
+        if (textarea) textarea.value = '';
+        if (bulkModal) bulkModal.classList.add('hidden');
+        renderEditorSidebar();
+        renderEditorMain();
+        showToast(`${added}개의 문장이 현재 세트에 추가되었습니다!`);
+      } else {
+        showToast('형식에 맞게 입력해주세요. (문장 | 보기A | 보기B | 정답 | 시간)');
+      }
+    });
+  }
 }
 
 function showToast(msg) {
