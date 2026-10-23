@@ -1333,24 +1333,24 @@ function renderAvatarsOnStage() {
 }
 
 function computeAvatarPosition(zoneKey, index, totalInZone) {
-  let minX = 40, maxX = 60;
-  if (zoneKey === 'A') { minX = 7; maxX = 32; }
-  if (zoneKey === 'B') { minX = 68; maxX = 93; }
+  let minX = 41, maxX = 59;
+  if (zoneKey === 'A') { minX = 8; maxX = 30; }
+  if (zoneKey === 'B') { minX = 70; maxX = 92; }
 
-  const cols = zoneKey === 'CENTER' ? 3 : 4;
+  const cols = 3;
   const row = Math.floor(index / cols);
   const col = index % cols;
   const itemsInThisRow = Math.min(cols, totalInZone - row * cols);
 
   const spanX = maxX - minX;
-  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow + 0.6) : 0;
+  const stepX = itemsInThisRow > 1 ? spanX / (itemsInThisRow + 0.3) : 0;
   const centerX = (minX + maxX) / 2;
   const offsetX = itemsInThisRow > 1
     ? (col - (itemsInThisRow - 1) / 2) * stepX
     : 0;
 
   const xPct = centerX + offsetX;
-  const yPct = Math.min(82, 54 + row * 13 + (col % 2) * 3);
+  const yPct = Math.min(84, 58 + row * 12);
 
   return { xPct, yPct };
 }
