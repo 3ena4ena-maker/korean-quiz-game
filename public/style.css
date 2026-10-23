@@ -364,34 +364,60 @@ body.student-only-mode .nav-menu {
 
 .question-board {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 20px 28px;
+  border-radius: 18px;
+  padding: 24px 28px;
   border: 1px solid #f1f5f9;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.03);
   position: relative;
 }
 
 .board-lobby {
   text-align: center;
-  padding: 10px 0;
+  padding: 12px 0 8px;
 }
 
 .lobby-badge {
   display: inline-block;
-  color: #4f46e5;
+  background: #ede9fe; /* 소프트 파스텔 라벤더 */
+  color: #6d28d9;
   font-weight: 600;
   font-size: 0.85rem;
-  margin-bottom: 8px;
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd6fe;
   letter-spacing: 0.2px;
 }
 
 .lobby-headline {
   font-family: var(--font-sans);
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #0f172a;
-  margin-bottom: 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #1e1b4b;
+  margin: 12px 0 18px;
+}
+
+.btn-pastel-start {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 14px 42px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pastel-start:hover {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(129, 140, 248, 0.45);
+}
+
+.btn-pastel-start:active {
+  transform: scale(0.98);
 }
 
 .lobby-desc {

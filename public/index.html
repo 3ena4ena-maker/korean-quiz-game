@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&family=Jua&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_8" />
+  <link rel="stylesheet" href="./style.css?v=20261023_9" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -83,19 +83,13 @@
     <div class="arena-wrapper">
       <!-- 상단 전광판 (문제 & 카운트다운 타이머) -->
       <div class="question-board" id="questionBoard">
-        <!-- 대기실 상태일 때 전광판 -->
+        <!-- 대기실 상태일 때 전광판 (파스텔톤, 세련되고 부드러운 분위기) -->
         <div class="board-lobby" id="boardLobby">
-          <div class="lobby-badge">대기실 · 방 번호 <strong id="lobbyRoomCode">1004</strong></div>
-          <h2 class="lobby-headline">한국어 천국과 지옥</h2>
-          <p class="lobby-desc">
-            학생들은 QR 코드로 접속해 원하는 구역으로 이동할 수 있습니다. 준비되면 문제를 시작하세요.
-          </p>
+          <div class="lobby-badge">실시간 동시접속 대기 중</div>
+          <h2 class="lobby-headline">귀여운 학생들이 광장으로 모이고 있어요!</h2>
           <div class="lobby-start-actions">
-            <button class="btn btn-primary btn-giant" id="startGameBtn">
-              1번 문제 시작하기
-            </button>
-            <button class="btn btn-secondary" id="openNewStudentWinBtn">
-              새 창으로 학생 동시접속 테스트
+            <button class="btn btn-pastel-start btn-giant" id="startGameBtn">
+              문제 시작!
             </button>
           </div>
         </div>
@@ -379,6 +373,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="./app.js?v=20261023_8"></script>
+  <script src="./app.js?v=20261023_9"></script>
 </body>
 </html>
