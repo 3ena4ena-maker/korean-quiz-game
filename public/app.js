@@ -1408,11 +1408,6 @@ function bindStageEvents() {
     resetLobbyBtn.addEventListener('click', hostResetToBeginning);
   }
 
-  const resetGameRoundBtn = document.getElementById('resetGameRoundBtn');
-  if (resetGameRoundBtn) {
-    resetGameRoundBtn.addEventListener('click', hostResetToBeginning);
-  }
-
   const startBtn = document.getElementById('startGameBtn');
   if (startBtn) {
     startBtn.addEventListener('click', () => {
@@ -1589,13 +1584,13 @@ function renderStageUI() {
 
   const zoneAWord = document.getElementById('zoneAWord');
   const zoneBWord = document.getElementById('zoneBWord');
-  zoneAWord.textContent = q ? q.optionA : '선택지 A';
-  zoneBWord.textContent = q ? q.optionB : '선택지 B';
+  if (zoneAWord) zoneAWord.textContent = q ? q.optionA : 'A';
+  if (zoneBWord) zoneBWord.textContent = q ? q.optionB : 'B';
 
   const boardOptA = document.getElementById('boardOptionA');
   const boardOptB = document.getElementById('boardOptionB');
-  if (boardOptA) boardOptA.textContent = q ? q.optionA : '선택지 A';
-  if (boardOptB) boardOptB.textContent = q ? q.optionB : '선택지 B';
+  if (boardOptA) boardOptA.textContent = q ? q.optionA : 'A';
+  if (boardOptB) boardOptB.textContent = q ? q.optionB : 'B';
 
   const countA = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'A').length;
   const countB = alivePlayers.filter(p => String(p.choice || '').toUpperCase().trim() === 'B').length;

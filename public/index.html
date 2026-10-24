@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261023_29" />
+  <link rel="stylesheet" href="./style.css?v=20261024_34" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -121,17 +121,17 @@
           <div class="stage-options-preview" id="stageOptionsPreview">
             <div class="stage-opt-pill opt-a">
               <span class="opt-letter">A</span>
-              <span class="opt-text" id="boardOptionA">선택지 A</span>
+              <span class="opt-text" id="boardOptionA">A</span>
             </div>
             <div class="stage-opt-pill opt-b">
               <span class="opt-letter">B</span>
-              <span class="opt-text" id="boardOptionB">선택지 B</span>
+              <span class="opt-text" id="boardOptionB">B</span>
             </div>
           </div>
 
           <!-- 정답 해설 배너 (정답 공개 시 표시) -->
           <div class="explanation-banner hidden" id="explanationBanner">
-            <span class="exp-tag">핵심 해설</span>
+            <span class="exp-tag">해설</span>
             <span id="explanationText"></span>
           </div>
 
@@ -145,9 +145,6 @@
             </button>
             <button class="btn btn-gold hidden" id="showWinnerBtn">
               최종 우승자 발표
-            </button>
-            <button class="btn btn-subtle-reset" id="resetGameRoundBtn" title="문제를 처음으로 리셋합니다">
-              🔄 처음으로 리셋
             </button>
           </div>
         </div>
@@ -192,18 +189,18 @@
           <div class="heaven-stage-canvas">
             <img src="./assets/heaven_stage.png" alt="천국 대광장 & A B 스테이지" class="heaven-stage-img" id="heavenStageImg" />
 
-            <!-- 좌측 A 스테이지 게이트 표지판 (문제 보기 A 실시간 표시) & 인원수 -->
+            <!-- 좌측 A 스테이지 게이트 표지판 & 인원수 -->
             <div class="heaven-gate-box gate-a" id="gateAnchorA">
               <div class="gate-sign-pill sign-a" id="gateSignA">
-                <span class="gate-word" id="zoneAWord">선택지 A</span>
+                <span class="gate-word" id="zoneAWord">A</span>
               </div>
               <span class="gate-count-badge count-a" id="zoneACount">0명</span>
             </div>
 
-            <!-- 우측 B 스테이지 게이트 표지판 (문제 보기 B 실시간 표시) & 인원수 -->
+            <!-- 우측 B 스테이지 게이트 표지판 & 인원수 -->
             <div class="heaven-gate-box gate-b" id="gateAnchorB">
               <div class="gate-sign-pill sign-b" id="gateSignB">
-                <span class="gate-word" id="zoneBWord">선택지 B</span>
+                <span class="gate-word" id="zoneBWord">B</span>
               </div>
               <span class="gate-count-badge count-b" id="zoneBCount">0명</span>
             </div>
@@ -391,6 +388,6 @@
   <!-- 토스트 알림 -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="./app.js?v=20261023_29"></script>
+  <script src="./app.js?v=20261024_34"></script>
 </body>
 </html>
