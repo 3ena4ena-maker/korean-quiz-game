@@ -49,6 +49,11 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  padding-right: 230px;
+}
+
+body.student-only-mode {
+  padding-right: 0 !important;
 }
 
 /* 학생 전용 모드일 때 상단 전체 네비게이션 바 및 광장/문장수정 카테고리 완전 삭제 (학생이 문제를 임의로 시작하지 못하도록 차단) */
@@ -88,42 +93,52 @@ body.student-only-mode #view-student-full {
 }
 
 /* =========================================
-   상단 네비게이션 바 (모던 미니멀 - 박스형태 배제)
+   오른쪽 고정 사이드바 상단: 네비게이션 메뉴 탭
    ========================================= */
 .topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 230px;
+  height: 246px;
   background: #0f172a;
   color: #f8fafc;
-  padding: 0 28px;
-  height: 56px;
+  padding: 14px 12px 10px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  z-index: 50;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -4px 0 16px rgba(15, 23, 42, 0.08);
+  z-index: 60;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .brand-title {
   font-family: var(--font-sans);
-  font-size: 1.18rem;
-  font-weight: 700;
+  font-size: 1.12rem;
+  font-weight: 800;
   letter-spacing: -0.4px;
   color: #ffffff;
+  text-align: center;
 }
 
-/* 카테고리 5개 (박스 없이 깔끔한 텍스트 네비게이션) */
+/* 카테고리 5개 (오른쪽 사이드바 버튼 정렬) */
 .nav-menu {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
 }
 
 .nav-item {
@@ -131,41 +146,44 @@ body.student-only-mode #view-student-full {
   background: transparent;
   color: #94a3b8;
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 0.92rem;
-  padding: 0 14px;
-  height: 100%;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 7px 12px;
+  height: 32px;
   cursor: pointer;
   transition: color 0.15s ease, background 0.15s ease;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 8px;
   outline: none;
+  width: 100%;
 }
 
 .nav-item:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-item.mode-tab.active {
   color: #ffffff;
-  font-weight: 600;
+  background: rgba(99, 102, 241, 0.28);
+  font-weight: 700;
 }
 
-/* 박스 형태 대신 밑줄 인디케이터로만 단정하게 활성 상태 표시 */
 .nav-item.mode-tab.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 12px;
-  right: 12px;
-  height: 2.5px;
-  background: #6366f1;
-  border-radius: 2px 2px 0 0;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 3.5px;
+  height: auto;
+  right: auto;
+  background: #818cf8;
+  border-radius: 0 3px 3px 0;
 }
 
 /* =========================================
@@ -299,46 +317,64 @@ body.student-only-mode #view-student-full {
   flex-direction: column;
 }
 
+#view-stage.active {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 /* =========================================
-   선생님 상단 컨트롤 바 (과도한 박스 지양, 미니멀 툴바)
+   오른쪽 고정 사이드바 하단: 선생님 컨트롤 패널
    ========================================= */
 .teacher-control-bar {
+  position: fixed;
+  top: 246px;
+  right: 0;
+  bottom: 0;
+  width: 230px;
   background: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
-  padding: 8px 28px;
+  border-left: 1px solid #e2e8f0;
+  padding: 14px 12px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 14px;
+  box-shadow: -4px 0 16px rgba(15, 23, 42, 0.04);
+  z-index: 55;
+  overflow-y: auto;
 }
 
 .control-left,
 .control-right {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
 }
 
 .control-group {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: #475569;
+  width: 100%;
 }
 
 .select-clean {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.84rem;
   color: #1e293b;
-  background: #ffffff;
+  background: #f8fafc;
   cursor: pointer;
   outline: none;
 }
@@ -347,23 +383,32 @@ body.student-only-mode #view-student-full {
   border-color: #6366f1;
 }
 
-/* 접속 인원 & 생존 인원 (예쁜 파스텔톤 뱃지, 이모지 없음) */
+/* 접속 인원 & 생존 인원 (사이드바 2열 배지) */
 .stats-pastel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-left: 0;
+  width: 100%;
 }
 
 .stat-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 5px 12px;
+  padding: 6px 8px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.1px;
+}
+
+.control-right .btn {
+  width: 100%;
+  justify-content: center;
+  padding: 8px 10px;
+  font-size: 0.85rem;
 }
 
 .stat-total {
@@ -391,40 +436,61 @@ body.student-only-mode #view-student-full {
 }
 
 /* =========================================
-   전광판 (문장 & 타이머 보드)
+   전광판 (문장 & 타이머 보드: 전체 화면의 절반보다 조금 작게 ~42%)
    ========================================= */
 .arena-wrapper {
   flex: 1;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 16px 28px;
-  gap: 14px;
-  max-width: 1440px;
+  padding: 12px 20px;
+  gap: 12px;
+  max-width: 1360px;
   width: 100%;
   margin: 0 auto;
 }
 
 .question-board {
+  flex: 0 0 42%;
+  min-height: 0;
+  width: 100%;
   background: #ffffff;
-  border-radius: 18px;
-  padding: 24px 28px;
-  border: 1px solid #f1f5f9;
-  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.03);
+  border-radius: 22px;
+  padding: 18px 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .board-lobby {
   text-align: center;
-  padding: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 100%;
+}
+
+.board-active {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  position: relative;
 }
 
 .lobby-badge {
   display: inline-block;
   background: #ede9fe; /* 소프트 파스텔 라벤더 */
   color: #6d28d9;
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 5px 16px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 6px 20px;
   border-radius: 20px;
   border: 1px solid #ddd6fe;
   letter-spacing: 0.2px;
@@ -432,22 +498,22 @@ body.student-only-mode #view-student-full {
 
 .lobby-headline {
   font-family: var(--font-sans);
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 2.35rem;
+  font-weight: 800;
   letter-spacing: -0.4px;
   color: #1e1b4b;
-  margin: 12px 0 18px;
+  margin: 4px 0 8px;
 }
 
 .btn-pastel-start {
   background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
   color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 14px 42px;
-  border-radius: 14px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  padding: 14px 52px;
+  border-radius: 16px;
   border: none;
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35);
+  box-shadow: 0 6px 18px rgba(129, 140, 248, 0.35);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -481,34 +547,34 @@ body.student-only-mode #view-student-full {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
 }
 
 .q-badge {
   background: #0f172a;
   color: #fff;
-  font-weight: 600;
-  font-size: 0.82rem;
-  padding: 4px 12px;
-  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 5px 14px;
+  border-radius: 8px;
   letter-spacing: 0.2px;
 }
 
 .q-category {
   background: #f1f5f9;
   color: #475569;
-  font-weight: 600;
-  font-size: 0.82rem;
-  padding: 4px 10px;
-  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 5px 12px;
+  border-radius: 8px;
 }
 
 .timer-pill {
   color: #ea580c;
-  font-weight: 700;
-  font-size: 1.05rem;
-  padding: 4px 12px;
-  border-radius: 6px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  padding: 5px 14px;
+  border-radius: 8px;
   background: #fff7ed;
   display: flex;
   align-items: center;
@@ -532,7 +598,7 @@ body.student-only-mode #view-student-full {
   background: #f1f5f9;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 18px;
+  margin-bottom: 6px;
 }
 
 .timer-progress-fill {
@@ -544,12 +610,12 @@ body.student-only-mode #view-student-full {
 
 .sentence-box {
   font-family: var(--font-sans);
-  font-size: 2.1rem;
-  font-weight: 700;
+  font-size: 2.75rem;
+  font-weight: 800;
   text-align: center;
   color: #0f172a;
-  line-height: 1.55;
-  margin: 14px 0 10px;
+  line-height: 1.32;
+  margin: 8px 0 2px;
   word-break: keep-all;
 }
 
@@ -578,8 +644,12 @@ body.student-only-mode #view-student-full {
 .sentence-translation {
   text-align: center;
   color: #64748b;
-  font-size: 0.92rem;
-  margin-bottom: 8px;
+  font-size: 1.08rem;
+  margin-bottom: 4px;
+}
+
+.sentence-translation:empty {
+  display: none;
 }
 
 /* 문제 화면 상단 A / B 파스텔 선택지 안내 바 (학생 리모컨과 100% 동일한 파스텔 톤) */
@@ -587,20 +657,20 @@ body.student-only-mode #view-student-full {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 28px;
-  margin: 16px auto 20px;
+  gap: 36px;
+  margin: 6px auto 0;
   flex-wrap: wrap;
 }
 
 .stage-opt-pill {
   display: inline-flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 32px 12px 16px;
+  gap: 18px;
+  padding: 11px 40px 11px 16px;
   border-radius: 99px;
   font-family: var(--font-sans);
   font-weight: 800;
-  font-size: 2.25rem;
+  font-size: 3.05rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease;
 }
@@ -614,13 +684,13 @@ body.student-only-mode #view-student-full {
 .stage-opt-pill.opt-a .opt-letter {
   background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%);
   color: #ffffff;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.65rem;
+  font-size: 2.1rem;
   font-weight: 900;
   box-shadow: 0 3px 8px rgba(56, 189, 248, 0.35);
 }
@@ -634,40 +704,41 @@ body.student-only-mode #view-student-full {
 .stage-opt-pill.opt-b .opt-letter {
   background: linear-gradient(135deg, #fda4af 0%, #fb7185 100%);
   color: #ffffff;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.65rem;
+  font-size: 2.1rem;
   font-weight: 900;
   box-shadow: 0 3px 8px rgba(251, 113, 133, 0.35);
 }
 
 .explanation-banner {
   background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
-  border: 2px solid #c7d2fe;
+  border: 2.5px solid #c7d2fe;
   border-radius: 16px;
-  padding: 16px 26px;
-  margin: 16px auto 18px;
-  max-width: 920px;
+  padding: 9px 22px;
+  margin: 6px auto 0;
+  width: fit-content;
+  max-width: calc(100% - 110px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  font-size: 1.45rem;
-  font-weight: 700;
-  line-height: 1.45;
+  gap: 10px;
+  font-size: 2.05rem;
+  font-weight: 800;
+  line-height: 1.32;
   color: #1e1b4b;
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.14);
 }
 
 .exp-tag {
   background: #6366f1;
   color: #ffffff;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   padding: 5px 14px;
   border-radius: 99px;
   white-space: nowrap;
@@ -675,37 +746,59 @@ body.student-only-mode #view-student-full {
 }
 
 .round-action-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  margin-top: 14px;
+  z-index: 10;
+}
+
+.round-action-bar .btn {
+  padding: 12px 22px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
+}
+
+.round-action-bar .btn.btn-next-arrow {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  font-size: 1.45rem;
+  font-weight: 900;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 /* =========================================
-   무대: 구름 위의 둥근 3D 플랫폼 (중앙 광장 + 좌우 대칭 A/B 구역)
+   무대: 나머지 화면(~58%)을 꽉 채우는 3D 스테이지 광장
    ========================================= */
 .stage-sky {
   flex: 1;
-  min-height: 540px;
-  background: radial-gradient(circle at 50% 15%, #eff6ff 0%, #e0f2fe 45%, #f1f5f9 100%);
-  border-radius: 28px;
+  min-height: 0;
+  width: 100%;
+  background: transparent;
+  border-radius: 0;
   position: relative;
   overflow: hidden;
-  border: 1px solid #e0e7ff;
+  border: none;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 18px 24px 28px;
-  box-shadow: inset 0 2px 14px rgba(255, 255, 255, 0.8), 0 12px 36px rgba(99, 102, 241, 0.06);
-  perspective: 1000px;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+  box-shadow: none;
 }
 
-/* 하늘 배경 3D 몽실 구름 클러스터 (참고 이미지 완벽 구현) */
+/* 불필요한 바깥 배경 구름 숨김 */
 .sky-clouds-backdrop {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
+  display: none;
 }
 
 .puff-cloud {
@@ -763,23 +856,23 @@ body.student-only-mode #view-student-full {
 }
 
 /* =========================================
-   3D 천국 부유섬 메인 스테이지 씬 (사용자 3D 그래픽 완벽 적용)
+   3D 천국 부유섬 메인 스테이지 씬 (문제 박스와 동일한 가로폭 + 하단 영역 100% 채움)
    ========================================= */
 .heaven-stage-scene {
   position: relative;
   width: 100%;
-  max-width: 1060px;
-  margin: 14px auto 20px;
-  border-radius: 28px;
+  height: 100%;
+  margin: 0;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 16px 45px rgba(14, 165, 233, 0.22), 0 0 0 2px rgba(186, 230, 253, 0.6);
-  background: #e0f2fe;
+  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.18), 0 0 0 1.5px rgba(186, 230, 253, 0.6);
+  background: #cfe9ff;
 }
 
 .heaven-stage-canvas {
   position: relative;
   width: 100%;
-  aspect-ratio: 1024 / 576;
+  height: 100%;
   animation: heavenFloat 5s ease-in-out infinite alternate;
 }
 
@@ -787,7 +880,7 @@ body.student-only-mode #view-student-full {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
 }
@@ -849,7 +942,7 @@ body.student-only-mode #view-student-full {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 68px;
+  min-width: 96px;
   padding: 8px 24px;
   border-radius: 14px;
   font-family: var(--font-sans);
@@ -1577,16 +1670,23 @@ body.student-only-mode #view-student-full {
   transform: scale(1.4);
 }
 
-/* 화면 중간 정보 영역 (단계 안내 배너 + 탈락자 관람석) */
+/* 화면 중간 정보 영역 (스테이지 상단 하늘 위에 오버레이하여 세로 공간 절약) */
 .stage-mid-info {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  width: 100%;
-  position: relative;
-  z-index: 10;
-  margin-bottom: 8px;
+  z-index: 25;
+  pointer-events: none;
+}
+
+.stage-mid-info .stage-status-banner,
+.stage-mid-info .eliminated-bar {
+  pointer-events: auto;
 }
 
 /* 탈락자 관람석 (화면 중간에 부드러운 글래스모피즘으로 배치) */
@@ -2179,6 +2279,73 @@ body.student-only-mode .student-view-bar {
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.4;
+}
+
+/* 학생 화면: 대광장 대기 중 상태 카드 */
+.st-lobby-waiting-card {
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #bae6fd;
+  border-radius: 18px;
+  padding: 24px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.12);
+}
+
+.st-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #0284c7;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1.5px solid #7dd3fc;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.1);
+}
+
+.st-waiting-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  animation: stPulseDot 1.4s ease-in-out infinite;
+}
+
+@keyframes stPulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.45); opacity: 0.45; }
+}
+
+.st-waiting-title {
+  margin: 4px 0 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0c4a6e;
+}
+
+.st-waiting-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #334155;
+  font-weight: 600;
+}
+
+.st-waiting-count-pill {
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0369a1;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 99px;
+  border: 1px solid #bae6fd;
 }
 
 .st-ab-buttons {

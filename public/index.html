@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20261026_38" />
+  <link rel="stylesheet" href="./style.css?v=20261026_48" />
 </head>
 <body>
   <!-- 상단 네비게이션 바 (모던 미니멀 - 박스형태 자제, 텍스트 카테고리 5개) -->
@@ -80,6 +80,9 @@
         <button class="btn btn-outline" id="resetLobbyBtn" title="문제를 처음 1번 또는 대기실로 리셋합니다">
           🔄 처음으로 리셋
         </button>
+        <button class="btn btn-gold" id="showWinnerBtn" title="최종 우승자를 발표합니다">
+          🏆 최종 우승자 발표
+        </button>
       </div>
     </section>
 
@@ -135,16 +138,13 @@
             <span id="explanationText"></span>
           </div>
 
-          <!-- 문제 진행 컨트롤 버튼 (선생님용) -->
+          <!-- 문제 진행 컨트롤 버튼 (선생님용 - 박스 오른쪽 하단 배치) -->
           <div class="round-action-bar">
             <button class="btn btn-warning" id="revealNowBtn">
               정답 즉시 공개
             </button>
-            <button class="btn btn-primary hidden" id="nextQuestionBtn">
-              다음 문제로 이동
-            </button>
-            <button class="btn btn-gold hidden" id="showWinnerBtn">
-              최종 우승자 발표
+            <button class="btn btn-primary btn-next-arrow hidden" id="nextQuestionBtn" title="다음 문제로 이동">
+              ➜
             </button>
           </div>
         </div>
@@ -152,20 +152,6 @@
 
       <!-- 서바이벌 스테이지 (A 구역 / 중앙 대기 광장 / B 구역) -->
       <div class="stage-sky" id="stageSky">
-        <!-- 중간 상단 정보 영역 (단계 안내 배너 + 탈락자 관람석을 화면 중간에 배치) -->
-        <div class="stage-mid-info">
-          <div class="stage-status-banner" id="stageStatusBanner">
-            대기실: 학생이 모이면 문제를 시작하세요
-          </div>
-          <!-- 탈락자 관람석 (가장 아래에서 화면 중간으로 이동) -->
-          <div class="eliminated-bar" id="eliminatedBar">
-            <span class="elim-title">🪑 탈락자 관람석 (<span id="eliminatedCount">0</span>명):</span>
-            <div class="elim-list" id="eliminatedList">
-              <span class="elim-empty">탈락한 학생이 없습니다</span>
-            </div>
-          </div>
-        </div>
-
         <!-- 하늘 배경 3D 몽실 구름 클러스터 (참고 이미지 완벽 구현) -->
         <div class="sky-clouds-backdrop">
           <div class="puff-cloud cloud-1">
@@ -186,6 +172,20 @@
 
         <!-- 3D 천국 부유섬 메인 스테이지 씬 (사용자 업로드 3D 그래픽 완벽 적용) -->
         <div class="heaven-stage-scene" id="heavenStageScene">
+          <!-- 중간 상단 정보 영역 (스테이지 박스 내부 상단 좌우에 배치) -->
+          <div class="stage-mid-info">
+            <div class="stage-status-banner" id="stageStatusBanner">
+              대기실: 학생이 모이면 문제를 시작하세요
+            </div>
+            <!-- 탈락자 관람석 -->
+            <div class="eliminated-bar" id="eliminatedBar">
+              <span class="elim-title">🪑 탈락자 관람석 (<span id="eliminatedCount">0</span>명):</span>
+              <div class="elim-list" id="eliminatedList">
+                <span class="elim-empty">탈락한 학생이 없습니다</span>
+              </div>
+            </div>
+          </div>
+
           <div class="heaven-stage-canvas">
             <img src="./assets/heaven_stage.png" alt="천국 대광장 & A B 스테이지" class="heaven-stage-img" id="heavenStageImg" />
 
@@ -388,6 +388,6 @@
   <!-- 토스트 알림 -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="./app.js?v=20261026_38"></script>
+  <script src="./app.js?v=20261026_48"></script>
 </body>
 </html>

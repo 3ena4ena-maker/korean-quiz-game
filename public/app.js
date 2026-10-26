@@ -807,37 +807,25 @@ let currentRenderedQId = null;
 let myLocalChoice = null; // 학생이 터치하자마자 UI 즉시 반응 보존용
 const avatarDomMap = new Map();
 
-let myStudentProfile = loadMyStudentProfile();
-let isStudentJoined = !isStudentUrlMode ? false : Boolean(sessionStorage.getItem('kor_quiz_joined_session'));
+let myStudentProfile = createFreshStudentProfile();
+let isStudentJoined = false;
 let isEditingStudentProfile = false;
 
-function loadMyStudentProfile() {
-  const saved = localStorage.getItem('kor_quiz_student_profile');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object') {
-        if (!AVATAR_CATALOG[parsed.avatar]) {
-          parsed.avatar = 'coral_peach';
-        }
-        return parsed;
-      }
-    } catch (_) {}
-  }
+function createFreshStudentProfile() {
+  localStorage.removeItem('kor_quiz_student_profile');
+  sessionStorage.removeItem('kor_quiz_joined_session');
   const randomAvatars = Object.keys(AVATAR_CATALOG);
   const pickAv = randomAvatars[Math.floor(Math.random() * randomAvatars.length)] || 'coral_peach';
-  const profile = {
-    playerId: 'stu_' + Math.random().toString(36).slice(2, 10),
-    name: '학생' + Math.floor(10 + Math.random() * 89),
+  return {
+    playerId: 'stu_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+    name: '',
     avatar: pickAv,
     country: '🇰🇷'
   };
-  localStorage.setItem('kor_quiz_student_profile', JSON.stringify(profile));
-  return profile;
 }
 
 function saveMyStudentProfile() {
-  localStorage.setItem('kor_quiz_student_profile', JSON.stringify(myStudentProfile));
+  // 매번 QR 접속 시 새로 이름을 입력받도록 영구 저장하지 않음
 }
 
 // =========================================================================
@@ -880,7 +868,7 @@ function connectCloudWebSocket() {
     cloudWs = new WebSocket(`${CLOUD_SYNC_WS}/?room=${encodeURIComponent(roomCodeParam)}`);
 
     cloudWs.onopen = () => {
-      if (isStudentUrlMode || isStudentJoined) {
+      if (isStudentJoined) {
         postStudentJoinToCloud();
       } else {
         pullCloudRoomState();
@@ -895,15 +883,21 @@ function connectCloudWebSocket() {
         if (data.type === 'relay:student-action' && !isStudentUrlMode) {
           handleIncomingStudentAction(data.action, true);
         } else if (data.type === 'player:kicked') {
-          if (data.playerId && hostPlayersMap[data.playerId]) {
-            delete hostPlayersMap[data.playerId];
-            if (avatarDomMap.has(data.playerId)) {
-              const rec = avatarDomMap.get(data.playerId);
-              if (rec && rec.el) rec.el.remove();
-              avatarDomMap.delete(data.playerId);
+          if (data.playerId) {
+            kickedPlayerIds.add(data.playerId);
+            if (hostPlayersMap[data.playerId]) {
+              delete hostPlayersMap[data.playerId];
+              if (avatarDomMap.has(data.playerId)) {
+                const rec = avatarDomMap.get(data.playerId);
+                if (rec && rec.el) rec.el.remove();
+                avatarDomMap.delete(data.playerId);
+              }
+              if (!isStudentUrlMode) {
+                applyNewGameState(buildPublicState());
+              }
             }
           }
-          if (data.playerId === myStudentProfile.playerId) {
+          if (data.playerId === myStudentProfile.playerId && !isLeavingVoluntarily) {
             handleKickedStudent();
           }
         } else if (data.type === 'game:state' && data.state) {
@@ -942,6 +936,7 @@ async function pullCloudRoomState() {
 
 let botsClearedAt = 0;
 const kickedPlayerIds = new Set();
+let isLeavingVoluntarily = false;
 
 function mergeRealStudentsFromCloud(cloudState) {
   if (!cloudState || !Array.isArray(cloudState.players)) return;
@@ -1047,6 +1042,7 @@ function handleIncomingStudentAction(msg, fromCloudRelay = false) {
   if (msg.type === 'student:join') {
     const p = msg.payload || {};
     const id = p.playerId || ('stu_' + Date.now());
+    kickedPlayerIds.delete(id);
     const existing = hostPlayersMap[id];
     hostPlayersMap[id] = {
       id,
@@ -1061,6 +1057,12 @@ function handleIncomingStudentAction(msg, fromCloudRelay = false) {
       emote: null
     };
     broadcastHostState({ skipCloudPush: fromCloudRelay });
+  } else if (msg.type === 'student:leave') {
+    const p = msg.payload || {};
+    const id = p.playerId || msg.playerId;
+    if (id) {
+      hostKickPlayer(id);
+    }
   } else if (msg.type === 'student:choose') {
     const { playerId, choice } = msg.payload || {};
     if (choice !== 'A' && choice !== 'B') return;
@@ -1482,7 +1484,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (!isStudentUrlMode) {
     await pullCloudRoomState();
     broadcastHostState();
-  } else {
+  } else if (isStudentJoined) {
     postStudentJoinToCloud();
   }
   renderStudentControllers();
@@ -1826,12 +1828,10 @@ function renderStageUI() {
 
     const revealBtn = document.getElementById('revealNowBtn');
     const nextBtn = document.getElementById('nextQuestionBtn');
-    const winBtn = document.getElementById('showWinnerBtn');
 
     revealBtn.classList.toggle('hidden', gameState.phase !== 'QUESTION');
     const hasMoreQuestions = gameState.questionIndex + 1 < gameState.totalQuestions;
     nextBtn.classList.toggle('hidden', !isRevealed || !hasMoreQuestions);
-    winBtn.classList.toggle('hidden', !isRevealed);
   }
 
   const zoneAWord = document.getElementById('zoneAWord');
@@ -2100,11 +2100,86 @@ function renderWinnerPodium() {
 // 학생용 모바일 컨트롤러 렌더링 (안정적인 DOM 업데이트로 터치 드롭 방지)
 // =========================================================================
 function joinAsStudent() {
+  isLeavingVoluntarily = false;
   isStudentJoined = true;
   sessionStorage.setItem('kor_quiz_joined_session', '1');
   postStudentJoinToCloud();
   renderStudentControllers();
 }
+
+function leaveAsStudent(isPageUnload = false) {
+  if (!isStudentJoined && !isPageUnload) return;
+  const pid = myStudentProfile && myStudentProfile.playerId;
+  if (!pid) return;
+
+  isLeavingVoluntarily = true;
+  isStudentJoined = false;
+  isEditingStudentProfile = false;
+  sessionStorage.removeItem('kor_quiz_joined_session');
+
+  const leaveMsg = {
+    type: 'student:leave',
+    payload: { playerId: pid }
+  };
+  const kickMsg = {
+    type: 'host:kick-player',
+    playerId: pid
+  };
+
+  if (!isStudentUrlMode) {
+    handleIncomingStudentAction(leaveMsg);
+  }
+  if (bcChannel) {
+    try { bcChannel.postMessage(leaveMsg); } catch (_) {}
+  }
+  if (cloudWs && cloudWs.readyState === WebSocket.OPEN) {
+    try {
+      cloudWs.send(JSON.stringify(leaveMsg));
+      cloudWs.send(JSON.stringify(kickMsg));
+    } catch (_) {}
+  }
+
+  const syncUrl = `${CLOUD_SYNC_HTTP}/?room=${encodeURIComponent(roomCodeParam)}`;
+  const bodyStr = JSON.stringify(kickMsg);
+  try {
+    fetch(syncUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      keepalive: true
+    }).catch(() => {});
+  } catch (_) {}
+
+  if (isPageUnload && navigator.sendBeacon) {
+    try {
+      const blob = new Blob([bodyStr], { type: 'application/json' });
+      navigator.sendBeacon(syncUrl, blob);
+    } catch (_) {}
+  }
+
+  if (!isPageUnload) {
+    myStudentProfile = createFreshStudentProfile();
+    renderStudentControllers();
+  }
+}
+
+window.addEventListener('pagehide', () => {
+  if (isStudentJoined) {
+    leaveAsStudent(true);
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (isStudentJoined) {
+    leaveAsStudent(true);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && isStudentUrlMode && isStudentJoined && gameState.phase === 'WINNER') {
+    leaveAsStudent(true);
+  }
+});
 
 function renderStudentControllers() {
   const mounts = [
@@ -2131,10 +2206,10 @@ function renderStudentControllers() {
           <h3 style="text-align:center; font-family:var(--font-display); font-size:1.35rem; color:#1e1b4b;">
             🐾 내 귀여운 3D 아바타 만들기
           </h3>
-          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name)}
+          ${renderLargeCreaturePreview(myStudentProfile.avatar, myStudentProfile.name || '이름을 입력하세요')}
           <div class="field-group">
             <label>이름 (학생 이름 / 별명)</label>
-            <input type="text" class="field-input st-name-input" value="${escapeHtml(myStudentProfile.name)}" maxlength="12" placeholder="이름을 입력하세요" />
+            <input type="text" class="field-input st-name-input" value="${escapeHtml(myStudentProfile.name)}" maxlength="12" placeholder="이름을 입력해 주세요" />
           </div>
           <div class="field-group">
             <label>캐릭터 선택 (15가지 귀여운 점토 생명체)</label>
@@ -2156,27 +2231,37 @@ function renderStudentControllers() {
       const nameInput = mount.querySelector('.st-name-input');
       if (nameInput) {
         nameInput.addEventListener('input', (e) => {
-          myStudentProfile.name = e.target.value.trim() || '학생';
-          saveMyStudentProfile();
+          myStudentProfile.name = e.target.value.trim();
+          nameInput.style.borderColor = '';
           const nameTagEl = mount.querySelector('.st-creature-stage .av-name');
-          if (nameTagEl) nameTagEl.textContent = myStudentProfile.name;
+          if (nameTagEl) nameTagEl.textContent = myStudentProfile.name || '이름을 입력하세요';
         });
       }
 
       mount.querySelectorAll('.avatar-pick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const inputEl = mount.querySelector('.st-name-input');
-          if (inputEl && inputEl.value.trim()) myStudentProfile.name = inputEl.value.trim();
+          if (inputEl) myStudentProfile.name = inputEl.value.trim();
           myStudentProfile.avatar = btn.dataset.avatar;
           saveMyStudentProfile();
-          postStudentJoinToCloud();
+          if (isStudentJoined) {
+            postStudentJoinToCloud();
+          }
           renderStudentControllers();
         });
       });
 
       mount.querySelector('.st-save-join-btn').addEventListener('click', () => {
         const inputEl = mount.querySelector('.st-name-input');
-        const nameVal = (inputEl ? inputEl.value.trim() : '') || myStudentProfile.name || '학생';
+        const nameVal = (inputEl ? inputEl.value.trim() : '') || (myStudentProfile.name ? myStudentProfile.name.trim() : '');
+        if (!nameVal) {
+          if (inputEl) {
+            inputEl.style.borderColor = '#ef4444';
+            inputEl.placeholder = '⚠️ 이름을 꼭 입력해 주세요!';
+            inputEl.focus();
+          }
+          return;
+        }
         myStudentProfile.name = nameVal;
         saveMyStudentProfile();
         isEditingStudentProfile = false;
@@ -2206,19 +2291,18 @@ function renderStudentControllers() {
         `;
       } else if (gameState.phase === 'LOBBY') {
         centerContentHtml = `
-          <div class="st-question-prompt" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
-            <strong>✨ 교실 대기광장에 입장 완료! (현재 ${playersArr.length}명 접속 중)</strong><br/>
-            <small style="color:#15803d;">선생님이 문제를 시작하면 A 또는 B 선택 버튼이 나타납니다.</small>
-          </div>
-          <div class="field-group">
-            <label>🎨 내 캐릭터 색상 바로 바꾸기 (15종 클릭 시 즉시 반영)</label>
-            <div class="st-quick-avatar-strip">
-              ${Object.entries(AVATAR_CATALOG).map(([key, info]) => `
-                <button type="button" class="st-quick-av-btn ${myStudentProfile.avatar === key ? 'selected' : ''}" data-avatar="${key}">
-                  <div>${renderCreatureThumb(key)}</div>
-                  <span>${info.label}</span>
-                </button>
-              `).join('')}
+          <div class="st-lobby-waiting-card">
+            <div class="st-waiting-badge">
+              <span class="st-waiting-dot"></span>
+              대광장 대기 중
+            </div>
+            <h4 class="st-waiting-title">광장 입장이 완료되었어요!</h4>
+            <p class="st-waiting-desc">
+              선생님이 문제를 시작할 때까지 잠시만 기다려 주세요.<br/>
+              문제가 시작되면 여기에 <strong>A / B 선택 버튼</strong>이 나타납니다.
+            </p>
+            <div class="st-waiting-count-pill">
+              👥 현재 대광장 대기 인원: <strong>${Math.max(1, playersArr.length)}명</strong>
             </div>
           </div>
         `;
@@ -2253,7 +2337,12 @@ function renderStudentControllers() {
       } else if (gameState.phase === 'WINNER') {
         centerContentHtml = `
           <div class="st-question-prompt" style="background:#fef3c7; color:#92400e;">
-            🏆 최후의 서바이벌 우승자 발표 중!
+            🏆 모든 문제가 끝났습니다! 수고하셨어요!
+            <div style="margin-top:12px;">
+              <button type="button" class="btn btn-outline-sm st-leave-plaza-btn" style="background:#ffffff; color:#dc2626; border-color:#fca5a5; font-weight:800; padding:8px 18px;">
+                🚪 광장 나가기 (로그아웃)
+              </button>
+            </div>
           </div>
         `;
       }
@@ -2270,8 +2359,9 @@ function renderStudentControllers() {
                 </div>
               </div>
             </div>
-            <div>
-              <button type="button" class="btn btn-outline-sm st-edit-profile-btn">이름 수정</button>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="btn btn-outline-sm st-edit-profile-btn">캐릭터/이름 변경</button>
+              <button type="button" class="btn btn-outline-sm st-leave-plaza-btn" style="color:#dc2626; border-color:#fecaca;">나가기</button>
             </div>
           </div>
 
@@ -2288,6 +2378,12 @@ function renderStudentControllers() {
           renderStudentControllers();
         });
       }
+
+      mount.querySelectorAll('.st-leave-plaza-btn').forEach(leaveBtn => {
+        leaveBtn.addEventListener('click', () => {
+          leaveAsStudent(false);
+        });
+      });
 
       mount.querySelectorAll('.st-quick-av-btn').forEach(btn => {
         btn.addEventListener('click', () => {
