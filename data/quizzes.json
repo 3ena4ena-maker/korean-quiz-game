@@ -1,6 +1,240 @@
 {
-  "activeSetId": "set-1",
+  "activeSetId": "set-sejong3-ch07-1",
   "sets": [
+    {
+      "id": "set-sejong3-ch07-1",
+      "title": "B-7:여행과 방문~(으)ㄹ 수 있다/없다. -(으)ㄴ (1부)",
+      "description": "교재 본문·연습 문제 중심 (여행에서 하는 일, 여행 준비, -(으)ㄹ 수 있다/없다, -(으)ㄴ)",
+      "questions": [
+        {
+          "id": "q701",
+          "category": "-(으)ㄹ 수 있다",
+          "sentence": "남산서울타워에서 서울 시내를 모두 [ _____ ] 있어서 좋아요.",
+          "translation": "It's nice because you can see all of downtown Seoul from Namsan Seoul Tower.",
+          "optionA": "볼 수",
+          "optionB": "본 수",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "동사 '보다'는 받침이 없으므로 가능을 나타낼 때 '-ㄹ 수 있다(볼 수 있다)'를 씁니다."
+        },
+        {
+          "id": "q702",
+          "category": "여행에서 하는 일",
+          "sentence": "강원도 바다에 가면 아침 일찍 아름다운 해돋이를 [ _____ ] 수 있어요.",
+          "translation": "If you go to the sea in Gangwon-do, you can see a beautiful sunrise early in the morning.",
+          "optionA": "빌릴",
+          "optionB": "볼",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "'야경/해돋이'는 눈으로 보는 것이므로 '해돋이를 보다(볼 수 있다)'가 알맞습니다."
+        },
+        {
+          "id": "q703",
+          "category": "-(으)ㄹ 수 있다",
+          "sentence": "학생증이 있으면 입장료를 [ _____ ] 있어요. 학생증을 가져가세요.",
+          "translation": "If you have a student ID, you can get a discount on the admission fee. Please bring your student ID.",
+          "optionA": "할인받을 수",
+          "optionB": "할인받으을 수",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'할인받다'는 어간 끝에 받침(ㄷ)이 있으므로 '-을 수 있다(할인받을 수 있다)'를 씁니다."
+        },
+        {
+          "id": "q704",
+          "category": "-(으)ㄹ 수 없다",
+          "sentence": "4월부터는 날씨가 따뜻해서 스키를 [ _____ ].",
+          "translation": "From April, the weather is warm, so you cannot ski.",
+          "optionA": "탈 수 있어요",
+          "optionB": "탈 수 없어요",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "날씨가 따뜻하면 눈이 녹아 스키를 타는 것이 불가능하므로 '탈 수 없어요'가 알맞습니다."
+        },
+        {
+          "id": "q705",
+          "category": "여행에서 하는 일",
+          "sentence": "한국에 가면 경치도 구경하고 재미있는 김치 축제에 [ _____ ] 수 있어요.",
+          "translation": "If you go to Korea, you can enjoy the scenery and participate in a fun Kimchi festival.",
+          "optionA": "환전할",
+          "optionB": "참가할",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "'축제'나 '행사'와 어울리는 동사는 '참가하다(축제에 참가하다)'입니다."
+        },
+        {
+          "id": "q706",
+          "category": "여행 준비",
+          "sentence": "여행을 가기 전에 잠을 잘 호텔이나 숙소를 미리 [ _____ ] 해요.",
+          "translation": "Before going on a trip, you need to book a hotel or accommodation in advance.",
+          "optionA": "예약해야",
+          "optionB": "방문해야",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "여행을 떠나기 전 호텔이나 숙소를 미리 정해 두는 것은 '숙소를 예약하다'라고 합니다."
+        },
+        {
+          "id": "q707",
+          "category": "여행 준비",
+          "sentence": "내일 아침 일찍 출발하니까 오늘 밤에 미리 가방과 짐을 [ _____ ].",
+          "translation": "Since we depart early tomorrow morning, please pack your bags and luggage tonight in advance.",
+          "optionA": "세우세요",
+          "optionB": "싸세요",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "'가방/짐'은 '싸다(짐을 싸다)'를 쓰고, '계획'은 '세우다(계획을 세우다)'를 씁니다."
+        },
+        {
+          "id": "q708",
+          "category": "문법 -(으)ㄴ",
+          "sentence": "이것은 지난번에 제주도 여행 가서 [ _____ ] 사진이에요.",
+          "translation": "This is a photo I took when I went on a trip to Jeju Island last time.",
+          "optionA": "찍은",
+          "optionB": "찍는",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'찍다'는 받침이 있는 동사이므로 과거에 일어난 일을 꾸며 줄 때 '-은(찍은 사진)'을 씁니다."
+        },
+        {
+          "id": "q709",
+          "category": "문법 -(으)ㄴ",
+          "sentence": "이번에 새로 [ _____ ] 비자는 3개월 동안 사용할 수 있어요.",
+          "translation": "The visa I newly received this time can be used for 3 months.",
+          "optionA": "받을",
+          "optionB": "받은",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "이미 비자를 받은 과거의 일이므로 동사 '받다' 뒤에 과거 관형사형 어미 '-은(받은 비자)'을 씁니다."
+        },
+        {
+          "id": "q710",
+          "category": "문법 -(으)ㄴ",
+          "sentence": "이것은 제가 집에서 직접 [ _____ ] 과자예요. 한번 먹어 보세요.",
+          "translation": "These are cookies I made myself at home. Please try one.",
+          "optionA": "만든",
+          "optionB": "만들은",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'만들다'처럼 'ㄹ' 받침으로 끝나는 동사에 '-(으)ㄴ'이 붙으면 'ㄹ'이 탈락하여 '만든'이 됩니다."
+        }
+      ]
+    },
+    {
+      "id": "set-sejong3-ch07-2",
+      "title": "B-7:여행과 방문~(으)ㄹ 수 있다/없다. -(으)ㄴ (2부)",
+      "description": "유사·응용 문제 및 불규칙 활용 심화 연습 (10문항)",
+      "questions": [
+        {
+          "id": "q711",
+          "category": "-(으)ㄹ 수 없다 (응용)",
+          "sentence": "라디오 소리가 너무 작아서 뉴스를 잘 [ _____ ] 없어요.",
+          "translation": "The radio volume is too low, so I cannot hear the news well.",
+          "optionA": "들을 수",
+          "optionB": "듣을 수",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'듣다'는 'ㄷ' 불규칙 동사이므로 모음 어미 '-을 수 없다'가 붙으면 '들을 수 없다'가 됩니다."
+        },
+        {
+          "id": "q712",
+          "category": "-(으)ㄹ 수 있다 (응용)",
+          "sentence": "저는 요리책을 보면 맛있는 불고기를 [ _____ ] 있어요.",
+          "translation": "If I look at a cookbook, I can make delicious bulgogi.",
+          "optionA": "만들을 수",
+          "optionB": "만들 수",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "'만들다, 살다, 놀다'처럼 어간이 'ㄹ' 받침으로 끝나는 동사는 바로 '수 있다(만들 수 있다)'가 붙습니다."
+        },
+        {
+          "id": "q713",
+          "category": "여행 준비 (응용)",
+          "sentence": "외국에 여행을 가기 전에 은행에서 그 나라 돈으로 [ _____ ] 했어요.",
+          "translation": "Before traveling abroad, I exchanged money into that country's currency at the bank.",
+          "optionA": "촬영을",
+          "optionB": "환전을",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "돈을 다른 나라 화폐로 바꾸는 것은 '환전을 하다'라고 합니다."
+        },
+        {
+          "id": "q714",
+          "category": "여행 준비 (응용)",
+          "sentence": "비행기를 타고 다른 나라에 여행을 가려면 꼭 [ _____ ] 챙겨야 해요.",
+          "translation": "To take an airplane and travel to another country, you must bring your passport.",
+          "optionA": "여권을",
+          "optionB": "학생증을",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "해외여행을 할 때 신분을 증명하기 위해 꼭 준비해야 하는 것은 '여권(여권을 준비하다)'입니다."
+        },
+        {
+          "id": "q715",
+          "category": "여행에서 하는 일 (응용)",
+          "sentence": "공원이 아주 넓어서 입구에서 자전거를 [ _____ ] 구경했어요.",
+          "translation": "Because the park was very large, I rented a bicycle at the entrance and looked around.",
+          "optionA": "싸서",
+          "optionB": "빌려서",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "돈을 내고 차나 자전거를 잠시 쓰는 것은 '차를/자전거를 빌리다'라고 합니다."
+        },
+        {
+          "id": "q716",
+          "category": "여행에서 하는 일 (응용)",
+          "sentence": "경주에 가면 옛날 역사를 알 수 있는 유명한 [ _____ ] 방문할 수 있어요.",
+          "translation": "If you go to Gyeongju, you can visit famous historical sites where you can learn about ancient history.",
+          "optionA": "유적지를",
+          "optionB": "기차표를",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "옛날 건물이나 역사적인 장소는 '유적지(유적지를 방문하다)'라고 합니다."
+        },
+        {
+          "id": "q717",
+          "category": "문법 -(으)ㄴ (응용)",
+          "sentence": "어제 백화점에서 새로 [ _____ ] 구두가 아주 편하고 마음에 들어요.",
+          "translation": "The shoes I newly bought at the department store yesterday are very comfortable and I like them.",
+          "optionA": "사은",
+          "optionB": "산",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "동사 '사다'는 받침이 없으므로 과거 관형사형 어미 '-ㄴ'이 붙어 '산 구두'가 됩니다."
+        },
+        {
+          "id": "q718",
+          "category": "문법 -(으)ㄴ (응용)",
+          "sentence": "지난주에 도서관에서 빌려서 [ _____ ] 소설책이 정말 재미있었어요.",
+          "translation": "The novel I borrowed from the library and read last week was really interesting.",
+          "optionA": "읽은",
+          "optionB": "읽는",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'지난주'에 이미 일어난 과거의 일이므로 받침 있는 동사 '읽다' 뒤에 '-은(읽은 소설책)'을 씁니다."
+        },
+        {
+          "id": "q719",
+          "category": "문법 -(으)ㄴ (응용)",
+          "sentence": "아까 카페에서 [ _____ ] 한국 노래 제목이 뭐예요?",
+          "translation": "What is the title of the Korean song we heard at the cafe earlier?",
+          "optionA": "들은",
+          "optionB": "듣은",
+          "answer": "A",
+          "timeLimit": 10,
+          "explanation": "'듣다'에 과거 관형사형 어미 '-은'이 결합하면 'ㄷ'이 'ㄹ'로 바뀌어 '들은 노래'가 됩니다."
+        },
+        {
+          "id": "q720",
+          "category": "문법 -(으)ㄴ (응용)",
+          "sentence": "여기가 제가 어렸을 때 10년 동안 [ _____ ] 고향 집이에요.",
+          "translation": "This is my hometown house where I lived for 10 years when I was young.",
+          "optionA": "살은",
+          "optionB": "산",
+          "answer": "B",
+          "timeLimit": 10,
+          "explanation": "동사 '살다'는 어간 끝에 'ㄹ' 받침이 있으므로 과거 관형사형 어미 '-ㄴ'이 붙을 때 'ㄹ'이 탈락해 '산 집'이 됩니다."
+        }
+      ]
+    },
     {
       "id": "set-1",
       "title": "🌱 초급 1급: 조사 & 기초 동사·형용사",
@@ -184,6 +418,35 @@
           "answer": "A",
           "timeLimit": 5,
           "explanation": "가치가 크고 꼭 필요하다는 의미의 형용사는 '중요하다(중요합니다)'입니다."
+        }
+      ]
+    },
+    {
+      "id": "set_1792832652484",
+      "title": "✨ ~어요/~었어요",
+      "description": "수업에 맞게 문장과 단어를 자유롭게 수정하세요.",
+      "questions": [
+        {
+          "id": "q_1792832652484",
+          "category": "형용사/동사",
+          "sentence": "한국어 공부가 정말 [ _____ ]!",
+          "optionA": "재미있어요",
+          "optionB": "짜증나요",
+          "answer": "A",
+          "timeLimit": 10,
+          "translation": "Studying Korean is really fun!",
+          "explanation": "즐겁고 흥미로울 때는 형용사 '재미있다(재미있어요)'를 씁니다."
+        },
+        {
+          "id": "q_1792832750581",
+          "category": "어휘/문법",
+          "sentence": "햇빛이 정말 [ _____ ]",
+          "optionA": "따뜻해요",
+          "optionB": "밝은",
+          "answer": "A",
+          "timeLimit": 10,
+          "translation": "The Sunshine is warn.",
+          "explanation": "'밝은'은 형용사임으로 문장의 끝에 올 수 없어요."
         }
       ]
     }
